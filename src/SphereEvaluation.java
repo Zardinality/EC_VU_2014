@@ -31,7 +31,7 @@ public class SphereEvaluation implements ContestEvaluation
 
 	public SphereEvaluation()
 	{
-		best_ = 0;
+		best_ = -100;
 		evaluations_ = 0;		
 	}
 

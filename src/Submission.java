@@ -39,7 +39,7 @@ public class Submission implements ContestSubmission
 		boolean sp = Boolean.parseBoolean(props.getProperty("Separable"));
 		double limit = Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
-		
+		population_ = 10000;
 	}
 	
 	@Override
@@ -54,12 +54,14 @@ public class Submission implements ContestSubmission
 				pred[i][j] = rnd_.nextDouble()*10-5;
 			}
 		}
-		Double score[][] = new Double[population_][10];
+		Double score[] = new Double[population_];
 		for(int i=0;i<population_;i++){
-			for(int j=0;j<10;j++){
-				score[i][j] = (Double)evaluation_.evaluate(pred);
-			}
+			score[i] = (Double)evaluation_.evaluate(pred[i]);			
 		}
 		
+	}
+	
+	public Double getResult() {
+		return evaluation_.getFinalResult();
 	}
 }
