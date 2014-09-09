@@ -43,8 +43,8 @@ public class Submission implements ContestSubmission
 		boolean sp = Boolean.parseBoolean(props.getProperty("Separable"));
 		double limit = Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
-		population_ = 1;//(int)Math.round(Math.sqrt(limit));
-		generation_ = (int)Math.round(limit)/(population_ * 8);
+		population_ = (int)Math.round(Math.sqrt(limit));
+		generation_ = (int)Math.round(limit)/(population_);
 		glr_ = 1/Math.sqrt(limit);
 		llr_ = 1/Math.sqrt(2 * limit);
 		lambda_ = population_ * 7;
@@ -63,7 +63,7 @@ public class Submission implements ContestSubmission
 		double g[][] = sampling(); 
 
 		double gnext[][] = new double[population_][10];
-		//double gtemp[][] = new double[population_][10];
+		double gtemp[][] = new double[population_][10];
 		
 		
 		double c = 0.95;//constant for mutation changing rate
@@ -84,25 +84,29 @@ public class Submission implements ContestSubmission
 		
 		for(i=0;i<generation_-1;i++)
 		{
-			System.out.println(Double.toString(evaluation_.getFinalResult()));
+			for(j=0;j<population_;j++)
+			{
+				g[j] = new double[10];
+				System.arraycopy(g[j], 0, gtemp[j], 0, 10);
+			}
+			//System.out.println(Double.toString(evaluation_.getFinalResult()));
 			for(j = 0; j < population_; j++)
 			{	
 				//rtemp = sigma[j] * rnd_.nextGaussian();
 				for(k = 0; k < 10; k++)
 				{
-					rtemp = g[j][k] + sigma[j] * rnd_.nextGaussian();
-					gnext[j][k] = rtemp;
+					gnext[j][k] = gtemp[j][k] + sigma[j] * rnd_.nextGaussian();
 				}
 				tempb = (Double)evaluation_.evaluate(gnext[j]);
-				System.out.println(Double.toString(tempb));
+				//System.out.println(Double.toString(tempb));
 				if(score[j] >= tempb)
 				{
-					System.out.println(Double.toString(tempb));
+					//System.out.println(Double.toString(tempb));
 					s[j] = 0;
 				}
 				else
 				{
-					System.out.println("enter");
+					//System.out.println("enter");
 					s[j] = 1;
 					g[j] = gnext[j];
 					score[j] = tempb;
