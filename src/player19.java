@@ -3,9 +3,10 @@ import org.vu.contest.ContestEvaluation;
 
 import java.util.Random;
 import java.util.Properties;
-import java.lang.*;
+import java.lang.Math;
 
-public class Submission implements ContestSubmission
+
+public class player19 implements ContestSubmission
 {
 	Random rnd_;
 	ContestEvaluation evaluation_;
@@ -17,19 +18,19 @@ public class Submission implements ContestSubmission
 	double beta_;
 	
 	
-	public Submission()
+	public player19()
 	{
 		rnd_ = new Random();
 	}
 	
-	@Override
+	//@Override
 	public void setSeed(long seed)
 	{
 		// Set seed of algortihms random process
 		rnd_.setSeed(seed);
 	}
 	
-	@Override
+	//@Override
 	public void setEvaluation(ContestEvaluation evaluation)
 	{
 		// Set evaluation problem used in the run
@@ -44,14 +45,14 @@ public class Submission implements ContestSubmission
 		double limit = Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
 		population_ = (int)Math.round(Math.sqrt(limit));
-		generation_ = (int)Math.round(limit)/(population_);
+		generation_ = (int)Math.floor(limit)/(population_);
 		glr_ = 1/Math.sqrt(limit);
 		llr_ = 1/Math.sqrt(2 * limit);
 		lambda_ = population_ * 7;
 		beta_ = 0.087266462599716;
 	}
 	
-	@Override
+	//@Override
 	public void run()
 	{
 		// Evaluating your results
@@ -152,7 +153,7 @@ public class Submission implements ContestSubmission
 		}
 		return g;
 	}
-	
+	/*
 	private double[][] recombination(double[][] g)//
 	{
 		int i,j,k;
@@ -243,7 +244,7 @@ public class Submission implements ContestSubmission
 		return g;
 	}
 	
-	
+	*/
 	
 	public Double getResult()
 	{
