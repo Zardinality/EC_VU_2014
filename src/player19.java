@@ -3,6 +3,7 @@ import org.vu.contest.ContestEvaluation;
 
 import java.util.Random;
 import java.util.Properties;
+import java.util.Arrays;
 import java.lang.Math;
 
 
@@ -16,6 +17,7 @@ public class player19 implements ContestSubmission
 	double glr_;//global learning rate
 	double llr_;//local learning rate
 	double beta_;
+	int algIndex_;
 	
 	
 	public player19()
@@ -23,14 +25,14 @@ public class player19 implements ContestSubmission
 		rnd_ = new Random();
 	}
 	
-	//@Override
+	@Override
 	public void setSeed(long seed)
 	{
 		// Set seed of algortihms random process
 		rnd_.setSeed(seed);
 	}
 	
-	//@Override
+	@Override
 	public void setEvaluation(ContestEvaluation evaluation)
 	{
 		// Set evaluation problem used in the run
@@ -44,15 +46,28 @@ public class player19 implements ContestSubmission
 		boolean sp = Boolean.parseBoolean(props.getProperty("Separable"));
 		double limit = Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
-		population_ = (int)Math.round(Math.sqrt(limit));
+		population_ = 100;
 		generation_ = (int)Math.floor(limit)/(population_);
-		glr_ = 1/Math.sqrt(limit);
-		llr_ = 1/Math.sqrt(2 * limit);
+		population_ = (int)Math.round(Math.sqrt(limit))/8;
+		generation_ = (int)Math.floor(limit)/(population_*8);
+		glr_ = 1/Math.sqrt(2 * limit);
+		llr_ = 1/Math.sqrt(2 * Math.sqrt(limit));
 		lambda_ = population_ * 7;
 		beta_ = 0.087266462599716;
+ 		if(sp && rg)
+		{
+			//population_ = (int)Math.floor(limit);
+			algIndex_ = 1;
+		}
+		if(sp && !rg)
+		{
+			//population_ = (int)Math.floor(limit);
+			algIndex_ = 2;
+		}
+		algIndex_ = 3; 
 	}
 	
-	//@Override
+	@Override
 	public void run()
 	{
 		// Evaluating your results
@@ -60,56 +75,74 @@ public class player19 implements ContestSubmission
 		// boolean pred[] = ...
 		int i,j,k;//iterator
 		
+		if(algIndex_ == 1)
+		{
+			double[] g = separable(true);
+			evaluation_.evaluate(g);
+			return;
+		}
+		else if(algIndex_ == 2)
+		{
+			double[] g = separable(false);
+			evaluation_.evaluate(g);
+			return;
+		}
+		else if(algIndex_ == 3)
+		{
+			double[][] g = samplingES();
+			for(i = 0; i<generation_; i++)
+			{
+				double[][] gnext = recombination(g);
+				gnext = mutation(gnext);
+				g = selection(gnext);
+			}
+		}
+		
+		
 		//first generation
-		double g[][] = sampling(); 
-
-		double gnext[][] = new double[population_][10];
-		double gtemp[][] = new double[population_][10];
+		double[][] g = sampling(); 
+		double[][] gnext = new double[population_][10];
+		//double[][] gtemp = new double[population_][];
 		
 		
 		double c = 0.95;//constant for mutation changing rate
-		double ps[] = new double[population_];
-		double s[] = new double[population_];
-		double sigma[] = new double[population_];
-		Double score[] = new Double[population_];
+		double[] ps = new double[population_];//successful time
+		double[] s = new double[population_];//successful indicator
+		double[] sigma = new double[population_];//std
+		Double[] score = new Double[population_];
 		for(i = 0; i<population_; i++)
 		{
 			sigma[i] = 1;
 			score[i] = (Double)evaluation_.evaluate(g[i]);
 		}
 		
-		Double rtemp = 0.0;
+		double[] rtemp = new double[10];
 		Double tempb = new Double(0);
 		//double rate = 0.0
 		
 		
 		for(i=0;i<generation_-1;i++)
 		{
-			for(j=0;j<population_;j++)
-			{
-				g[j] = new double[10];
-				System.arraycopy(g[j], 0, gtemp[j], 0, 10);
-			}
-			//System.out.println(Double.toString(evaluation_.getFinalResult()));
 			for(j = 0; j < population_; j++)
 			{	
-				//rtemp = sigma[j] * rnd_.nextGaussian();
 				for(k = 0; k < 10; k++)
 				{
-					gnext[j][k] = gtemp[j][k] + sigma[j] * rnd_.nextGaussian();
+					gnext[j][k] = g[j][k] + sigma[j] * rnd_.nextGaussian();
+					if(gnext[j][k]>5) gnext[j][k] = 5;
+					else if(gnext[j][k]<-5) gnext[j][k] = -5;
 				}
 				tempb = (Double)evaluation_.evaluate(gnext[j]);
 				//System.out.println(Double.toString(tempb));
 				if(score[j] >= tempb)
 				{
-					//System.out.println(Double.toString(tempb));
 					s[j] = 0;
 				}
 				else
 				{
 					//System.out.println("enter");
 					s[j] = 1;
-					g[j] = gnext[j];
+					rtemp = gnext[j].clone();
+					g[j] = rtemp;
 					score[j] = tempb;
 				}
 				ps[j] = ps[j] + s[j];
@@ -122,51 +155,55 @@ public class player19 implements ContestSubmission
 					sigma[j] = sigma[j] / c;
 				}
 			}
-					
 		}
-		
 	}
 	
 	private double[][] sampling()
 	{
 		int i,j,k;
-		double g[][] = new double[population_][10]; 
-		if(population_>1024)
+		double[][] g = new double[population_][10]; 
+		for(i=0;i<population_;i++)
 		{
-			for(i=0;i<population_;i++)
+			for(j=0;j<10;j++)
 			{
-				for(j=0;j<10;j++)
-				{
-					g[i][j] = rnd_.nextDouble()*10-5;
-				}
-			}
-		}
-		else
-		{
-			for(i=0;i<population_;i++)
-			{
-				for(j=0;j<10;j++)
-				{
-					g[i][j] = rnd_.nextDouble()*10-5;
-				}
+				g[i][j] = rnd_.nextDouble()*10-5;
 			}
 		}
 		return g;
 	}
-	/*
+	
+	private double[][] samplingES()
+	{
+		int i,j,k;
+		double[][] g = new double[population_][65]; 
+		
+		for(i=0;i<population_;i++)
+		{
+			for(j=0;j<10;j++)
+			{
+				g[i][j] = rnd_.nextDouble()*10-5;
+			}
+			for(j = 10; j < 65; j++)
+			{
+				g[i][j] = 1;
+			}
+		}
+		
+		return g;
+	}
+	
 	private double[][] recombination(double[][] g)//
 	{
 		int i,j,k;
 		int[] index = new int[2];
-		double[][] gnext = new double[lambda_][10];
-		double[][] snext = new double[lambda_][10];
+		double[][] gnext = new double[lambda_][65];
 		for(i = 0; i < lambda_; i++)
 		{
+			index[0] = rnd_.nextInt(population_);
 			index[1] = rnd_.nextInt(population_);
-			index[2] = rnd_.nextInt(population_);
 			for(j = 0; j < 65; j++)
 			{
-				gnext[i][j] = 0.5 * (g[index[1]][j]+g[index[2]][j]);
+				gnext[i][j] = 0.5 * (g[index[0]][j]+g[index[1]][j]);
 			}
 		}
 		return gnext;
@@ -177,7 +214,7 @@ public class player19 implements ContestSubmission
 		int i,j,k;
 		double r = 0.0;
 		double[][] cov = new double[10][10];
-		double[][] gtemp = new double[lambda_][10];
+		double[][] gtemp = new double[lambda_][65];
 		for(i = 0; i < lambda_; i++)
 		{
 			r = glr_ * rnd_.nextGaussian();
@@ -193,13 +230,13 @@ public class player19 implements ContestSubmission
 			{
 				for(k = 0; k < 10; k++)
 				{
-					if(j < k)
+					if(j > k)
 					{
-						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][j*9+k-1]);
+						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-k)*k/2+j-k]);
 					}
-					else if(j > k)
+					else if(j < k)
 					{
-						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][j*9+k]);
+						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-j)*j/2+k-j]);
 					}
 					else
 					{
@@ -209,7 +246,7 @@ public class player19 implements ContestSubmission
 			}
 			for(j = 0; j < 10; j++)
 			{
-                
+                gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
 			}
 		}
 		return gtemp;
@@ -219,13 +256,13 @@ public class player19 implements ContestSubmission
 	{
 		int i,j,k;
 		int index = 0;
-		double g[][] = new double[population_][65];
+		double[][] g = new double[population_][65];
 		Double[] score = new Double[lambda_];
 		Double temp = 0.0;
 		
 		for(i = 0; i < lambda_; i++)
 		{
-			score[i] = (Double)evaluation_.evaluate(gnext[i]);
+			score[i] = (Double)evaluation_.evaluate(Arrays.copyOfRange(gnext[i], 0, 10));
 		}
 		for(i = 0; i < population_; i++)
 		{
@@ -244,10 +281,125 @@ public class player19 implements ContestSubmission
 		return g;
 	}
 	
-	*/
+	private double[] separable(boolean rg)
+	{
+		int i,j,k;
+		double[] g = new double[10];
+		for(i = 0; i < 10; i++)
+		{
+			if(rg)
+			{
+				g[i] = trialRg(i,(population_ - 1)/10);
+			}
+			else
+			{
+				g[i] = trial(i,(population_ - 1)/10);
+			}
+		}
+		return g;
+	}
 	
+	private double trial(int dim, int population)
+	{
+		int i,j,k;
+		double best = 0;
+		double bestscore = -999;
+		double result = 0.0;
+		double[] g = new double[10];
+		for(i = 0; i < 10; i++)
+		{
+			g[i] = 1;
+		}
+		for(i = 0; i < population; i++)
+		{
+			g[dim] = rnd_.nextDouble() * 10 - 5;
+			//g[dim] = rnd_.nextDouble() * 10 * (i + 1) / population - 5;
+			result = (Double)evaluation_.evaluate(g);
+			if(bestscore < result)
+			{
+				bestscore = result;
+				best = g[dim];
+			}
+		}
+		return best;
+	}
+	
+	private double trialRg(int dim, int population)
+	{
+		int i,j,k;
+		double best = 0;
+		double bestscore = -999;
+		double result = 0.0;
+		int pop = (int)Math.round(Math.sqrt((double)population));
+		int gen = population / pop;
+		double[][] g = new double[pop][10];
+		double[][] gnext = new double[pop][10];
+		for(i = 0; i < pop; i++)
+		{
+			for(j = 0; j < 10; j++)
+			{
+				g[i][j] = 1;
+				gnext[i][j] = 1;
+			}
+			g[i][dim] = rnd_.nextDouble() * 10 - 5;
+		}
+		
+		double c = 0.95;//constant for mutation changing rate
+		double[] ps = new double[pop];//
+		double[] s = new double[pop];
+		double[] sigma = new double[pop];
+		Double[] score = new Double[pop];
+		for(i = 0; i < pop; i++)
+		{
+			sigma[i] = 1;
+			score[i] = (Double)evaluation_.evaluate(g[i]);
+		}
+		
+		double rtemp = 0.0;
+		double tempb = 0.0;
+		
+		for(i = 0; i < gen - 1; i++)
+		{
+			for(j = 0; j < pop; j++)
+			{	
+				gnext[j][dim] = g[j][dim] + sigma[j] * rnd_.nextGaussian();
+				
+				tempb = (Double)evaluation_.evaluate(gnext[j]);
+				if(score[j] >= tempb)
+				{
+					s[j] = 0;
+				}
+				else
+				{
+					if(bestscore < tempb)
+					{
+						bestscore = tempb;
+						best = gnext[j][dim];
+					}
+					//System.out.println("enter");
+					s[j] = 1;
+					rtemp = gnext[j][dim];
+					g[j][dim] = rtemp;
+					score[j] = tempb;
+				}
+				ps[j] = ps[j] + s[j];
+				if(ps[j]/i > 0.205 && sigma[j] > 0.1)
+				{
+					sigma[j] = sigma[j] * c;
+				}
+				else if(ps[j]/i < 0.195 && sigma[j] < 5)
+				{
+					sigma[j] = sigma[j] / c;
+				}
+			}
+		}
+		return best;
+	}
+	
+ 	
 	public Double getResult()
 	{
 		return evaluation_.getFinalResult();
-	}
+	} 
+	
 }

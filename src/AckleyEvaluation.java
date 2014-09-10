@@ -1,5 +1,6 @@
 import java.util.Properties;
 import org.vu.contest.ContestEvaluation;
+import java.lang.Math;
 
 // This is an example evaluation. It is based on the standard sphere function. It is a maximization problem with a maximum of 10 for 
 //  	vector x=0.
@@ -8,7 +9,7 @@ import org.vu.contest.ContestEvaluation;
 // Base performance is calculated as the distance of the expected fitness of a random search (with the same amount of available
 //	evaluations) on the sphere function to the function minimum, thus Base = E[f_best_random] - ftarget. Fitness is scaled
 //	according to this base, thus Fitness = 10 - 10*(f-fbest)/Base
-public class SphereEvaluation implements ContestEvaluation 
+public class AckleyEvaluation implements ContestEvaluation 
 {
 	// Evaluations budget
 	private final static int EVALS_LIMIT_ = 10000;
@@ -26,20 +27,27 @@ public class SphereEvaluation implements ContestEvaluation
 	// Properties of the evaluation
 	private String multimodal_ = "false";
 	private String regular_ = "true";
-	private String separable_ = "true";
+	private String separable_ = "false";
 	private String evals_ = Integer.toString(EVALS_LIMIT_);
 
-	public SphereEvaluation()
+	public AckleyEvaluation()
 	{
 		best_ = -100;
 		evaluations_ = 0;		
 	}
 
 	// The standard sphere function. It has one minimum at 0.
-	private double function(double[] x)
+	private double func1(double[] x)
 	{	
 		double sum = 0;
 		for(int i=0; i<10; i++) sum += (x[i]+1)*(x[i]+1);
+		return sum;
+	}
+	
+	private double func2(double[] x)
+	{	
+		double sum = 0;
+		for(int i=0; i<10; i++) sum += Math.cos(2 * 3.1415926 * (x[i]+1));
 		return sum;
 	}
 	
@@ -55,7 +63,7 @@ public class SphereEvaluation implements ContestEvaluation
 		
 		// Transform function value (sphere is minimization).
 		// Normalize using the base performance
-		double f = 10 - 10*( (function(ind)-ftarget_) / BASE_ ) ;
+		double f = 20 * Math.exp(-0.2 * Math.sqrt(0.1 * func1(ind))) + Math.exp(0.1 * func2(ind)) - 10 - Math.exp(1);//10 - 10*( (function(ind)-ftarget_) / BASE_ ) ;
 		if(f>best_) best_ = f;
 		evaluations_++;
 		
