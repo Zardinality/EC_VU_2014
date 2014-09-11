@@ -25,6 +25,7 @@ public class player19 implements ContestSubmission
 		rnd_ = new Random();
 	}
 	
+	
 	@Override
 	public void setSeed(long seed)
 	{
@@ -46,33 +47,29 @@ public class player19 implements ContestSubmission
 		boolean sp = Boolean.parseBoolean(props.getProperty("Separable"));
 		double limit = Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
-		population_ = 100;
-		generation_ = (int)Math.floor(limit)/(population_);
 		population_ = (int)Math.round(Math.sqrt(limit))/8;
-		generation_ = (int)Math.floor(limit)/(population_*8);
+		generation_ = ((int)Math.floor(limit)-population_)/(population_*6);
 		glr_ = 1/Math.sqrt(2 * limit);
 		llr_ = 1/Math.sqrt(2 * Math.sqrt(limit));
-		lambda_ = population_ * 7;
+		lambda_ = population_ * 6;
 		beta_ = 0.087266462599716;
+		algIndex_ = 0;
  		if(sp && rg)
 		{
-			//population_ = (int)Math.floor(limit);
+			population_ = (int)Math.floor(limit);
 			algIndex_ = 1;
 		}
-		if(sp && !rg)
+ 		else if(sp && !rg)
 		{
-			//population_ = (int)Math.floor(limit);
+			population_ = (int)Math.floor(limit);
 			algIndex_ = 2;
 		}
-		algIndex_ = 3; 
+		else if(rg) algIndex_ = 3; 
 	}
 	
 	@Override
 	public void run()
 	{
-		// Evaluating your results
-		// E.g. evaluating a series of true/false predictions
-		// boolean pred[] = ...
 		int i,j,k;//iterator
 		
 		if(algIndex_ == 1)
@@ -96,6 +93,7 @@ public class player19 implements ContestSubmission
 				gnext = mutation(gnext);
 				g = selection(gnext);
 			}
+			return;
 		}
 		
 		
