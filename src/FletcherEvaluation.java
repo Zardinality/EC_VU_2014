@@ -1,53 +1,62 @@
 import java.util.Properties;
+import java.util.Random;
+
 import org.vu.contest.ContestEvaluation;
+
 import java.lang.Math;
 
-// This is an example evaluation. It is based on the standard sphere function. It is a maximization problem with a maximum of 10 for 
-//  	vector x=0.
-// The sphere function itself is for minimization with minimum at 0, thus fitness is calculated as Fitness = 10 - 10*(f-fbest), 
-//  	where f is the result of the sphere function
-// Base performance is calculated as the distance of the expected fitness of a random search (with the same amount of available
-//	evaluations) on the sphere function to the function minimum, thus Base = E[f_best_random] - ftarget. Fitness is scaled
-//	according to this base, thus Fitness = 10 - 10*(f-fbest)/Base
-public class FletcherEvaluation implements ContestEvaluation 
-{
-	// Evaluations budget
-	private final static int EVALS_LIMIT_ = 10000;
-	// The base performance. It is derived by doing random search on the sphere function (see function method) with the same
-	//  amount of evaluations
-	private final static double BASE_ = 11.5356;
-	// The minimum of the sphere function
-	private final static double ftarget_=0;
+
+public class FletcherEvaluation implements ContestEvaluation{
 	
-	// Best fitness so far
+	
+	private final static int EVALS_LIMIT_ = 10000;
 	private double best_;
-	// Evaluations used so far
 	private int evaluations_;
 	
-	// Properties of the evaluation
-	private String multimodal_ = "false";
+	private String multimodal_ = "true";
 	private String regular_ = "false";
 	private String separable_ = "false";
 	private String evals_ = Integer.toString(EVALS_LIMIT_);
-
+	
 	public FletcherEvaluation()
 	{
-		best_ = -100;
-		evaluations_ = 0;		
+		best_ = 100;
+		evaluations_ =0;
 	}
-
-	// The standard sphere function. It has one minimum at 0.
-	private double func1(double[] x)
-	{	
+	
+	private double func(double[] x)
+	{
+		double f=0;
+		Random rnd = new Random();
+		for(int i=0;i<10;i++)
+		{
+			int a = rnd.nextInt(200)-100;
+			int b = rnd.nextInt(200)-100;
+			double alpha = rnd.nextDouble()*2*Math.PI-Math.PI;
+			
+			f += Math.pow((func_A(a,b,alpha) - func_B(a,b,x[i])), 2);
+			
+		}
+		return f;
+	}
+	private double func_A(int a,int b,double alpha)
+	{
+		
 		double sum = 0;
-		for(int i=0; i<10; i++) sum += (x[i]+1)*(x[i]+1);
+		for(int j = 0;j<10;j++)
+		{	
+			sum += (a*Math.sin(alpha) + b*Math.cos(alpha));
+		}
 		return sum;
 	}
 	
-	private double func2(double[] x)
-	{	
+	private double func_B(int a,int b,double x)
+	{
 		double sum = 0;
-		for(int i=0; i<10; i++) sum += Math.cos(2 * 3.1415926 * (x[i]+1));
+		for(int j = 0;j<10;j++)
+		{
+			sum += (a*Math.sin(x/5*Math.PI) + b*Math.cos(x/5*Math.PI));
+		}
 		return sum;
 	}
 	
@@ -58,18 +67,17 @@ public class FletcherEvaluation implements ContestEvaluation
 		if(!(result instanceof double[])) throw new IllegalArgumentException();
 		double ind[] = (double[]) result;
 		if(ind.length!=10) throw new IllegalArgumentException();
-		
+			
 		if(evaluations_>EVALS_LIMIT_) return null;
 		
-		// Transform function value (sphere is minimization).
-		// Normalize using the base performance
-		double f = 20 * Math.exp(-0.2 * Math.sqrt(0.1 * func1(ind))) + Math.exp(0.1 * func2(ind)) - 10 - Math.exp(1);//10 - 10*( (function(ind)-ftarget_) / BASE_ ) ;
+		double f = 0;
+		f = 10 - func(ind);
 		if(f>best_) best_ = f;
 		evaluations_++;
 		
 		return new Double(f);
 	}
-
+	
 	@Override
 	public Object getData(Object arg0) 
 	{
@@ -81,7 +89,7 @@ public class FletcherEvaluation implements ContestEvaluation
 	{
 		return best_;
 	}
-
+	
 	@Override
 	public Properties getProperties() 
 	{
