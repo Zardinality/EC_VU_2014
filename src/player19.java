@@ -16,7 +16,7 @@ public class player19 implements ContestSubmission
 	Integer lambda_;//number# of offspring
 	double glr_;//global learning rate
 	double llr_;//local learning rate
-	double beta_;
+	double beta_;//turning angle
 	int algIndex_;
 	
 	
@@ -65,7 +65,7 @@ public class player19 implements ContestSubmission
 			population_ = 10;
 			lambda_ = 70;
 			generation_ = ((int)Math.floor(limit)-population_)/lambda_;
-			algIndex_ = 2; 
+			algIndex_ = 3; 
 		}
 		else algIndex_ = 3;
  		
