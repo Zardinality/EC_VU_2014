@@ -100,65 +100,6 @@ public class player19 implements ContestSubmission
 			}
 			return;
 		}
-		
-		
-		//first generation
-		double[][] g = sampling(); 
-		double[][] gnext = new double[population_][10];
-		//double[][] gtemp = new double[population_][];
-		
-		
-		double c = 0.95;//constant for mutation changing rate
-		double[] ps = new double[population_];//successful time
-		double[] s = new double[population_];//successful indicator
-		double[] sigma = new double[population_];//std
-		Double[] score = new Double[population_];
-		for(i = 0; i<population_; i++)
-		{
-			sigma[i] = 1;
-			score[i] = (Double)evaluation_.evaluate(g[i]);
-		}
-		
-		double[] rtemp = new double[10];
-		Double tempb = new Double(0);
-		//double rate = 0.0
-		
-		
-		for(i=0;i<generation_-1;i++)
-		{
-			for(j = 0; j < population_; j++)
-			{	
-				for(k = 0; k < 10; k++)
-				{
-					gnext[j][k] = g[j][k] + sigma[j] * rnd_.nextGaussian();
-					if(gnext[j][k]>5) gnext[j][k] = 5;
-					else if(gnext[j][k]<-5) gnext[j][k] = -5;
-				}
-				tempb = (Double)evaluation_.evaluate(gnext[j]);
-				//System.out.println(Double.toString(tempb));
-				if(score[j] >= tempb)
-				{
-					s[j] = 0;
-				}
-				else
-				{
-					//System.out.println("enter");
-					s[j] = 1;
-					rtemp = gnext[j].clone();
-					g[j] = rtemp;
-					score[j] = tempb;
-				}
-				ps[j] = ps[j] + s[j];
-				if(ps[j]/i > 0.205 && sigma[j] > 0.1)
-				{
-					sigma[j] = sigma[j] * c;
-				}
-				else if(ps[j]/i < 0.195 && sigma[j] < 5)
-				{
-					sigma[j] = sigma[j] / c;
-				}
-			}
-		}
 	}
 	
 	private double[][] sampling()
