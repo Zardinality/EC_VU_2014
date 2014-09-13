@@ -6,9 +6,10 @@ import java.util.Properties;
 import java.util.Arrays;
 import java.lang.Math;
 
-
 public class player19 implements ContestSubmission
 {
+        public static final int DIM = 10;
+        
 	Random rnd_;
 	ContestEvaluation evaluation_;
 	Integer population_;
@@ -18,6 +19,8 @@ public class player19 implements ContestSubmission
 	double llr_;//local learning rate
 	double beta_;//turning angle
 	int algIndex_;
+        
+        boolean mm_, rg_, sp_;
 	
 	
 	public player19()
@@ -42,9 +45,9 @@ public class player19 implements ContestSubmission
 		// Get evaluation properties
 		Properties props = evaluation.getProperties();
 		// Property keys depend on specific evaluation
-		boolean mm = Boolean.parseBoolean(props.getProperty("Multimodal"));
-		boolean rg = Boolean.parseBoolean(props.getProperty("Regular"));
-		boolean sp = Boolean.parseBoolean(props.getProperty("Separable"));
+		mm_ = Boolean.parseBoolean(props.getProperty("Multimodal"));
+		rg_ = Boolean.parseBoolean(props.getProperty("Regular"));
+		sp_ = Boolean.parseBoolean(props.getProperty("Separable"));
 		double limit = Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
 		population_ = (int)Math.round(Math.sqrt(limit))/8;
@@ -54,13 +57,13 @@ public class player19 implements ContestSubmission
 		lambda_ = population_ * 6;
 		beta_ = 0.087266462599716;
 		algIndex_ = 0;
- 		if(sp)
+ 		if(sp_)
 		{
 		
 			population_ = (int)Math.floor(limit);
 			algIndex_ = 1;
 		}
-		else if(rg)
+		else if(rg_)
 		{
 			population_ = 10;
 			lambda_ = 70;
@@ -74,32 +77,34 @@ public class player19 implements ContestSubmission
 	@Override
 	public void run()
 	{
-		int i,j,k;//iterator
-		
-		if(algIndex_ == 1)
-		{
-			double[] g = separable(true);
-			evaluation_.evaluate(g);
-			return;
-		}
-		else if(algIndex_ == 2)
-		{
-			double[] g = separable(false);
-			evaluation_.evaluate(g);
-			return;
-		}
-		else if(algIndex_ == 3)
-		{
-			double[][] g = samplingES();
-			double[][] gnext = new double[lambda_][65];
-			for(i = 0; i<generation_; i++)
-			{
-				gnext = recombination(g);
-				gnext = mutation(gnext);
-				g = selection(gnext);
-			}
-			return;
-		}
+//		int i,j,k;//iterator
+//		
+//		if(algIndex_ == 1)
+//		{
+//			double[] g = separable(true);
+//			evaluation_.evaluate(g);
+//			return;
+//		}
+//		else if(algIndex_ == 2)
+//		{
+//			double[] g = separable(false);
+//			evaluation_.evaluate(g);
+//			return;
+//		}
+//		else if(algIndex_ == 3)
+//		{
+//			double[][] g = samplingES();
+//			double[][] gnext = new double[lambda_][65];
+//			for(i = 0; i<generation_; i++)
+//			{
+//				gnext = recombination(g);
+//				gnext = mutation(gnext);
+//				g = selection(gnext);
+//			}
+//			return;
+//		}
+                double[] g = evolution(mm_, rg_, sp_);
+                evaluation_.evaluate(g);
 	}
 	
 	private double[][] sampling()
@@ -285,6 +290,24 @@ public class player19 implements ContestSubmission
 		return g;
 	}
 	
+        private double[] evolution(boolean mm, boolean rg, boolean sp)
+        {
+            double[] g = new double[DIM];
+            if (mm)
+                {
+                    g = func1();
+                }
+                else if (rg)
+                {
+                    g = func3();
+                }
+                else
+                {
+                    g = func2();
+                }
+            return g;
+        }
+        
 	private double[] separable(boolean rg)
 	{
 		int i,j,k;
@@ -309,8 +332,8 @@ public class player19 implements ContestSubmission
 		double best = 0;
 		double bestscore = -999;
 		double result = 0.0;
-		double[] g = new double[10];
-		for(i = 0; i < 10; i++)
+		double[] g = new double[DIM];
+		for(i = 0; i < DIM; i++)
 		{
 			g[i] = 1;
 		}
@@ -336,11 +359,11 @@ public class player19 implements ContestSubmission
 		double result = 0.0;
 		int pop = (int)Math.round(Math.sqrt((double)population));
 		int gen = population / pop;
-		double[][] g = new double[pop][10];
-		double[][] gnext = new double[pop][10];
+		double[][] g = new double[pop][DIM];
+		double[][] gnext = new double[pop][DIM];
 		for(i = 0; i < pop; i++)
 		{
-			for(j = 0; j < 10; j++)
+			for(j = 0; j < DIM; j++)
 			{
 				g[i][j] = 1;
 				gnext[i][j] = 1;
@@ -400,6 +423,40 @@ public class player19 implements ContestSubmission
 		return best;
 	}
 	
+        private double[] func1()
+        {
+            
+        }
+        
+        private double[] func2()
+        {
+            
+        }
+        
+        private double[] func3(int dim, int population)
+	{
+		int i,j,k;
+		double best = 0;
+		double bestscore = -999;
+		double result = 0.0;
+		double[] g = new double[DIM];
+		for(i = 0; i < DIM; i++)
+		{
+			g[i] = 1;
+		}
+		for(i = 0; i < population; i++)
+		{
+			g[dim] = rnd_.nextDouble() * 10 - 5;
+			//g[dim] = rnd_.nextDouble() * 10 * (i + 1) / population - 5;
+			result = (Double)evaluation_.evaluate(g);
+			if(bestscore < result)
+			{
+				bestscore = result;
+				best = g[dim];
+			}
+		}
+		return g;
+	}
  	
 	public Double getResult()
 	{
