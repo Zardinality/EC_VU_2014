@@ -82,7 +82,7 @@ public class FletcherEvaluation implements ContestEvaluation{
 		if(evaluations_>EVALS_LIMIT_) return null;
 
 		double f = 0;
-		f = 10 - func(ind,alpha_,a_,b_);
+		f = 10 - func(ind,alpha_,a_,b_)/1000;
 		if(f>best_) best_ = f;
 		evaluations_++;
 		

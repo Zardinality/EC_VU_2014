@@ -250,10 +250,10 @@ public class player19 implements ContestSubmission
 				}
 				gtemp[i][j] = gnext[i][j] + sum;
 			}
-			//for(j = 0; j < 10; j++)
-			//{
-			//	gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
-			//}
+			for(j = 0; j < 10; j++)
+			{
+				gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
+			}
 		}
 		return gtemp;
 	}
