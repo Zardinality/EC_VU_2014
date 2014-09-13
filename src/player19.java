@@ -19,7 +19,6 @@ public class player19 implements ContestSubmission
 	double beta_;//turning angle
 	int algIndex_;
 	
-	
 	public player19()
 	{
 		rnd_ = new Random();
@@ -129,7 +128,7 @@ public class player19 implements ContestSubmission
 			}
 			for(j = 10; j < 20; j++)
 			{
-				g[i][j] = 0.1;
+				g[i][j] = 0.2;
 			}
 			for(j = 20; j < 65; j++)
 			{
@@ -200,6 +199,7 @@ public class player19 implements ContestSubmission
 		int i,j,k;
 		double sum;
 		double r = 0.0;
+		double sigma = 0.05;
 		double[][] cov = new double[10][10];
 		double[][] L = new double[10][10];
 		double[][] gtemp = new double[lambda_][65];
@@ -210,10 +210,13 @@ public class player19 implements ContestSubmission
 			for(j = 10; j < 20; j++)
 			{
 				gtemp[i][j] = gnext[i][j] + r + llr_ * rnd_.nextGaussian();
+				if(gtemp[i][j] < sigma) gtemp[i][j] = sigma;
 			}
 			for(j = 20; j < 65; j++)
 			{
 				gtemp[i][j] = gnext[i][j] + beta_ * rnd_.nextGaussian();
+				if(gtemp[i][j] > Math.PI) gtemp[i][j] -= 2 * Math.PI;
+				else if(gtemp[i][j] < -Math.PI) gtemp[i][j] += 2 * Math.PI;
 			}
 			for(j = 0; j < 10; j++)
 			{
