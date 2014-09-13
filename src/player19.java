@@ -54,17 +54,21 @@ public class player19 implements ContestSubmission
 		lambda_ = population_ * 6;
 		beta_ = 0.087266462599716;
 		algIndex_ = 0;
- 		if(sp && rg)
+ 		if(sp)
 		{
+		
 			population_ = (int)Math.floor(limit);
 			algIndex_ = 1;
 		}
- 		else if(sp && !rg)
+		else if(rg)
 		{
-			population_ = (int)Math.floor(limit);
-			algIndex_ = 2;
+			population_ = 10;
+			lambda_ = 70;
+			generation_ = ((int)Math.floor(limit)-population_)/lambda_;
+			algIndex_ = 2; 
 		}
-		else if(rg) algIndex_ = 3; 
+		else algIndex_ = 3;
+ 		
 	}
 	
 	@Override
@@ -87,9 +91,10 @@ public class player19 implements ContestSubmission
 		else if(algIndex_ == 3)
 		{
 			double[][] g = samplingES();
+			double[][] gnext = new double[lambda_][65];
 			for(i = 0; i<generation_; i++)
 			{
-				double[][] gnext = recombination(g);
+				gnext = recombination(g);
 				gnext = mutation(gnext);
 				g = selection(gnext);
 			}
@@ -181,16 +186,20 @@ public class player19 implements ContestSubmission
 			{
 				g[i][j] = rnd_.nextDouble()*10-5;
 			}
-			for(j = 10; j < 65; j++)
+			for(j = 10; j < 20; j++)
 			{
-				g[i][j] = 1;
+				g[i][j] = 0.1;
+			}
+			for(j = 20; j < 65; j++)
+			{
+				g[i][j] = 0;
 			}
 		}
 		
 		return g;
 	}
 	
-	private double[][] recombination(double[][] g)//
+	private double[][] recombination(double[][] g)// mean-value recombine
 	{
 		int i,j,k;
 		int[] index = new int[2];
@@ -207,12 +216,53 @@ public class player19 implements ContestSubmission
 		return gnext;
 	}
 	
+	private double[][] recombinationD(double[][] g)//discrete recombine
+	{
+		int i,j,k;
+		int[] index = new int[2];
+		double[][] gnext = new double[lambda_][65];
+		for(i = 0; i < lambda_; i++)
+		{
+			index[0] = rnd_.nextInt(population_);
+			index[1] = rnd_.nextInt(population_);
+			for(j = 0; j < 65; j++)
+			{
+				if(rnd_.nextDouble() > 0.5) gnext[i][j] = g[index[0]][j];
+				else gnext[i][j] = g[index[1]][j];
+			}
+		}
+		return gnext;
+	}
+	
+
+	private double[][] recombinationRND(double[][] g)//
+	{
+		int i,j,k;
+		int[] index = new int[2];
+		double ratio = 0.0;
+		double[][] gnext = new double[lambda_][65];
+		for(i = 0; i < lambda_; i++)
+		{
+			index[0] = rnd_.nextInt(population_);
+			index[1] = rnd_.nextInt(population_);
+			ratio = rnd_.nextDouble();
+			for(j = 0; j < 65; j++)
+			{
+				gnext[i][j] = ratio * g[index[0]][j] + (1 - ratio) * g[index[1]][j];
+			}
+		}
+		return gnext;
+	}
+	
 	private double[][] mutation(double[][] gnext)
 	{
 		int i,j,k;
+		double sum;
 		double r = 0.0;
 		double[][] cov = new double[10][10];
+		double[][] L = new double[10][10];
 		double[][] gtemp = new double[lambda_][65];
+		double[] x = new double[10];
 		for(i = 0; i < lambda_; i++)
 		{
 			r = glr_ * rnd_.nextGaussian();
@@ -230,7 +280,7 @@ public class player19 implements ContestSubmission
 				{
 					if(j > k)
 					{
-						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-k)*k/2+j-k]);
+						cov[j][k] = -0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-k)*k/2+j-k]);
 					}
 					else if(j < k)
 					{
@@ -242,13 +292,28 @@ public class player19 implements ContestSubmission
 					}
 				}
 			}
+			L = Cholesky.cholesky(cov);
 			for(j = 0; j < 10; j++)
 			{
-                gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
+				x[j] = rnd_.nextGaussian();
+			}
+			for(j = 0; j < 10; j++)
+			{
+				sum = 0;
+				for(k = 0; k < j+1; k++)
+				{
+					sum += L[j][k] * x[k];
+				}
+				gtemp[i][j] = gnext[i][j] + sum;
+			}
+			for(j = 0; j < 10; j++)
+			{
+				gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
 			}
 		}
 		return gtemp;
 	}
+	
 	
 	private double[][] selection(double[][] gnext)
 	{
@@ -349,7 +414,7 @@ public class player19 implements ContestSubmission
 		Double[] score = new Double[pop];
 		for(i = 0; i < pop; i++)
 		{
-			sigma[i] = 1;
+			sigma[i] = 0.1;
 			score[i] = (Double)evaluation_.evaluate(g[i]);
 		}
 		
@@ -381,11 +446,11 @@ public class player19 implements ContestSubmission
 					score[j] = tempb;
 				}
 				ps[j] = ps[j] + s[j];
-				if(ps[j]/i > 0.205 && sigma[j] > 0.1)
+				if(ps[j]/i > 0.205 && sigma[j] > 0.01)
 				{
 					sigma[j] = sigma[j] * c;
 				}
-				else if(ps[j]/i < 0.195 && sigma[j] < 5)
+				else if(ps[j]/i < 0.195 && sigma[j] < 2)
 				{
 					sigma[j] = sigma[j] / c;
 				}
