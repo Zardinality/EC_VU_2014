@@ -77,7 +77,7 @@ public class player19 implements ContestSubmission
 		
 		if(algIndex_ == 1)
 		{
-			double[] g = separable(true);
+			double[] g = golden(10,population_);
 			evaluation_.evaluate(g);
 			return;
 		}
@@ -115,6 +115,17 @@ public class player19 implements ContestSubmission
 		return g;
 	}
 	
+	private double[] golden(int DIM, int limit)
+	{
+		int i,j,k;
+		double[] g = new double[10];
+		for(i = 0; i < 10; i++)
+		{
+			g[i] = trialRg(i,(population_ - 1)/10);
+		}
+		return g;
+	}
+	
 	private double[][] samplingES()
 	{
 		int i,j,k;
@@ -132,7 +143,7 @@ public class player19 implements ContestSubmission
 			}
 			for(j = 20; j < 65; j++)
 			{
-				g[i][j] = 0;
+				g[i][j] = 0.1;
 			}
 		}
 		
@@ -211,12 +222,12 @@ public class player19 implements ContestSubmission
 			{
 				gtemp[i][j] = gnext[i][j] + r + llr_ * rnd_.nextGaussian();
 				if(gtemp[i][j] < sigma) gtemp[i][j] = sigma;
-			}
+			}/*
 			for(j = 20; j < 65; j++)
 			{
 				gtemp[i][j] = gnext[i][j] + beta_ * rnd_.nextGaussian();
-				if(gtemp[i][j] > Math.PI) gtemp[i][j] -= 2 * Math.PI;
-				else if(gtemp[i][j] < -Math.PI) gtemp[i][j] += 2 * Math.PI;
+				if(gtemp[i][j] >= Math.PI/2) gtemp[i][j] -= Math.PI;
+				else if(gtemp[i][j] <= -Math.PI/2) gtemp[i][j] += Math.PI;
 			}
 			for(j = 0; j < 10; j++)
 			{
@@ -224,18 +235,19 @@ public class player19 implements ContestSubmission
 				{
 					if(j > k)
 					{
-						cov[j][k] = -0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-k)*k/2+j-k]);
+						cov[j][k] = 0.5 * Math.abs(gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-k)*k/2+j-k]);
 					}
 					else if(j < k)
 					{
-						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-j)*j/2+k-j]);
+						cov[j][k] = 0.5 * Math.abs(gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-j)*j/2+k-j]);
 					}
 					else
 					{
-						cov[j][k] = gtemp[i][10+j] * gtemp[i][10+j];
+						cov[j][k] = Math.pow(gtemp[i][10+j], 2);
 					}
 				}
 			}
+			
 			L = Cholesky.cholesky(cov);
 			for(j = 0; j < 10; j++)
 			{
@@ -249,7 +261,7 @@ public class player19 implements ContestSubmission
 					sum += L[j][k] * x[k];
 				}
 				gtemp[i][j] = gnext[i][j] + sum;
-			}
+			}*/
 			for(j = 0; j < 10; j++)
 			{
 				gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
@@ -337,73 +349,73 @@ public class player19 implements ContestSubmission
 		double best = 0;
 		double bestscore = -999;
 		double result = 0.0;
-		int pop = (int)Math.round(Math.sqrt((double)population));
-		int gen = population / pop;
-		double[][] g = new double[pop][10];
-		double[][] gnext = new double[pop][10];
-		for(i = 0; i < pop; i++)
+		double[][] g = new double[3][2];
+		double[][] gnext = new double[4][2];
+		g[0][0] = -5;
+		g[0][1] = gd_evaluate(dim, g[0][0]);
+		g[1][0] = 20 / (1 + Math.sqrt(5)) - 5;
+		g[1][1] = gd_evaluate(dim, g[1][0]);
+		g[2][0] = 5;
+		g[2][1] = gd_evaluate(dim, g[2][0]);
+		for(i = 0; i < population-5; i++)
 		{
-			for(j = 0; j < 10; j++)
-			{
-				g[i][j] = 1;
-				gnext[i][j] = 1;
-			}
-			g[i][dim] = rnd_.nextDouble() * 10 - 5;
+			gnext = gd_recomb(g,dim);
+			g = gd_select(gnext);
 		}
-		
-		double c = 0.95;//constant for mutation changing rate
-		double[] ps = new double[pop];//
-		double[] s = new double[pop];
-		double[] sigma = new double[pop];
-		Double[] score = new Double[pop];
-		for(i = 0; i < pop; i++)
-		{
-			sigma[i] = 0.1;
-			score[i] = (Double)evaluation_.evaluate(g[i]);
-		}
-		
-		double rtemp = 0.0;
-		double tempb = 0.0;
-		
-		for(i = 0; i < gen - 1; i++)
-		{
-			for(j = 0; j < pop; j++)
-			{	
-				gnext[j][dim] = g[j][dim] + sigma[j] * rnd_.nextGaussian();
-				
-				tempb = (Double)evaluation_.evaluate(gnext[j]);
-				if(score[j] >= tempb)
-				{
-					s[j] = 0;
-				}
-				else
-				{
-					if(bestscore < tempb)
-					{
-						bestscore = tempb;
-						best = gnext[j][dim];
-					}
-					//System.out.println("enter");
-					s[j] = 1;
-					rtemp = gnext[j][dim];
-					g[j][dim] = rtemp;
-					score[j] = tempb;
-				}
-				ps[j] = ps[j] + s[j];
-				if(ps[j]/i > 0.205 && sigma[j] > 0.01)
-				{
-					sigma[j] = sigma[j] * c;
-				}
-				else if(ps[j]/i < 0.195 && sigma[j] < 2)
-				{
-					sigma[j] = sigma[j] / c;
-				}
-			}
-		}
+		gnext = gd_recomb(g,dim);
+		best = (gnext[1][0]+gnext[2][0])/2;
 		return best;
 	}
 	
+	private double[][] gd_select(double[][] gnext)
+	{
+		double[][] g = new double[3][2];
+		if(gnext[1][1] < gnext[2][1])
+		{
+			g[0] = gnext[1].clone();
+			g[1] = gnext[2].clone();
+			g[2] = gnext[3].clone();
+		}
+		else
+		{
+			g[0] = gnext[0].clone();
+			g[1] = gnext[1].clone();
+			g[2] = gnext[2].clone();
+		}
+		return g;
+	}
+	
+	private double[][] gd_recomb(double[][] g, int dim)
+	{
+		double[][] gnext = new double[4][2];
+		gnext[0] = g[0].clone();
+		gnext[3] = g[2].clone();
+		double gnew = g[0][0]+g[2][0]-g[1][0];
+		if(gnew < g[1][0])
+		{
+			gnext[2] = g[1].clone();
+			gnext[1][0] = gnew;
+			gnext[1][1] = gd_evaluate(dim, gnew);
+		}
+		else
+		{
+			gnext[1] = g[1].clone();
+			gnext[2][0] = gnew;
+			gnext[2][1] = gd_evaluate(dim, gnew);
+		}
+		return gnext;
+	}
  	
+	private double gd_evaluate(int dim, double g)
+	{
+		double score = 0;
+		double[] var = new double[10];
+		for(int i=0; i<10;i++) var[i] = 1;
+		var[dim] = g;
+		score = (Double)evaluation_.evaluate(var);
+		return score;
+	}
+	
 	public Double getResult()
 	{
 		return evaluation_.getFinalResult();

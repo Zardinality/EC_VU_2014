@@ -10,8 +10,8 @@ public class Main {
 		for(i = 0; i < trailnum; i++)
 		{
 			//SphereEvaluation eva = new SphereEvaluation();
-			//AckleyEvaluation eva = new AckleyEvaluation();
-			FletcherEvaluation eva = new FletcherEvaluation();
+			AckleyEvaluation eva = new AckleyEvaluation();
+			//FletcherEvaluation eva = new FletcherEvaluation();
 			player19 test = new player19();
 			test.setSeed(i);
 			test.setEvaluation(eva);

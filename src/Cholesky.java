@@ -54,13 +54,26 @@ public class Cholesky {
                 for (int k = 0; k < j; k++) {
                     sum += L[i][k] * L[j][k];
                 }
-                if (i == j) L[i][i] = Math.sqrt(A[i][i] - sum);
+                if (i == j) L[i][i] = Math.sqrt(Math.abs(A[i][i] - sum));
                 else        L[i][j] = 1.0 / L[j][j] * (A[i][j] - sum);
+                if (Double.isNaN(L[i][j])) throw new RuntimeException("NaN");
             }
             if (L[i][i] <= 0) {
                 throw new RuntimeException("Matrix not positive definite");
             }
         }
+        /*for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                System.out.printf("%8.5f ", A[i][j]);
+            }
+            System.out.println();
+        }
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                System.out.printf("%8.5f ", L[i][j]);
+            }
+            System.out.println();
+        }*/
         return L;
     }
 

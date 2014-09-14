@@ -12,7 +12,7 @@ import java.lang.Math;
 public class AckleyEvaluation implements ContestEvaluation 
 {
 	// Evaluations budget
-	private final static int EVALS_LIMIT_ = 10000;
+	private final static int EVALS_LIMIT_ = 100000;
 	// The base performance. It is derived by doing random search on the sphere function (see function method) with the same
 	//  amount of evaluations
 	private final static double BASE_ = 11.5356;
@@ -40,14 +40,14 @@ public class AckleyEvaluation implements ContestEvaluation
 	private double func1(double[] x)
 	{	
 		double sum = 0;
-		for(int i=0; i<10; i++) sum += (x[i]+1)*(x[i]+1);
+		for(int i=0; i<10; i++) sum += Math.pow((x[i]+1), 2);
 		return sum;
 	}
 	
 	private double func2(double[] x)
 	{	
 		double sum = 0;
-		for(int i=0; i<10; i++) sum += Math.cos(2 * 3.1415926 * (x[i]+1));
+		for(int i=0; i<10; i++) sum += Math.cos(2 * Math.PI * (x[i]+1));
 		return sum;
 	}
 	
