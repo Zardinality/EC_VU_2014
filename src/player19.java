@@ -10,6 +10,8 @@ public class player19 implements ContestSubmission
 {
         public static final int DIM = 10;
         
+        public static final int RECOMB_MEAN = 0, RECOMB_DISCRETE = 1, RECOMB_RANDOM = 2;
+        
 	Random rnd_;
 	ContestEvaluation evaluation_;
 	Integer population_;
@@ -117,60 +119,35 @@ public class player19 implements ContestSubmission
 		return g;
 	}
 	
-	private double[][] recombination(double[][] g)// mean-value recombine
-	{
-		int i,j,k;
-		int[] index = new int[2];
-		double[][] gnext = new double[lambda_][65];
-		for(i = 0; i < lambda_; i++)
-		{
-			index[0] = rnd_.nextInt(population_);
-			index[1] = rnd_.nextInt(population_);
-			for(j = 0; j < 65; j++)
-			{
-				gnext[i][j] = 0.5 * (g[index[0]][j]+g[index[1]][j]);
-			}
-		}
-		return gnext;
-	}
-	
-	private double[][] recombinationD(double[][] g)//discrete recombine
-	{
-		int i,j,k;
-		int[] index = new int[2];
-		double[][] gnext = new double[lambda_][65];
-		for(i = 0; i < lambda_; i++)
-		{
-			index[0] = rnd_.nextInt(population_);
-			index[1] = rnd_.nextInt(population_);
-			for(j = 0; j < 65; j++)
-			{
-				if(rnd_.nextDouble() > 0.5) gnext[i][j] = g[index[0]][j];
-				else gnext[i][j] = g[index[1]][j];
-			}
-		}
-		return gnext;
-	}
-	
-
-	private double[][] recombinationRND(double[][] g)//
-	{
-		int i,j,k;
-		int[] index = new int[2];
-		double ratio = 0.0;
-		double[][] gnext = new double[lambda_][65];
-		for(i = 0; i < lambda_; i++)
-		{
-			index[0] = rnd_.nextInt(population_);
-			index[1] = rnd_.nextInt(population_);
-			ratio = rnd_.nextDouble();
-			for(j = 0; j < 65; j++)
-			{
-				gnext[i][j] = ratio * g[index[0]][j] + (1 - ratio) * g[index[1]][j];
-			}
-		}
-		return gnext;
-	}
+        private double[][] recombination(double[][] g, int length, int lambda, int population, int method)
+        {
+            int[] index = new int[2];
+            double[][] gnext = new double[lambda][length];
+            for (int i = 0; i < lambda; i++)
+            {
+                index[0] = rnd_.nextInt(population);
+		index[1] = rnd_.nextInt(population);
+                double ratio = rnd_.nextDouble();
+                for (int j = 0; j < length; j++)
+                {
+                    switch (method) {
+                            case RECOMB_MEAN:
+                                gnext[i][j] = 0.5 * (g[index[0]][j]+g[index[1]][j]);
+                                break;
+                            case RECOMB_DISCRETE:
+                                if (rnd_.nextDouble() > 0.5)
+                                    gnext[i][j] = g[index[0]][j];
+				else
+                                    gnext[i][j] = g[index[1]][j];
+                                break;
+                            case RECOMB_RANDOM:
+                                gnext[i][j] = ratio * g[index[0]][j] + (1 - ratio) * g[index[1]][j];
+                                break;
+                    }      
+                }
+            }
+            return gnext;
+        }
 	
 	private double[][] mutation(double[][] gnext)
 	{
@@ -424,7 +401,7 @@ public class player19 implements ContestSubmission
             double[][] gnext = new double[lambda_][65];
             for (int i = 0; i < generation_; i++)
             {
-                gnext = recombination(g);
+                gnext = recombination(g, 65, lambda_, population_, RECOMB_MEAN);
                 gnext = mutation(gnext);
                 g = selection(gnext);
             }
