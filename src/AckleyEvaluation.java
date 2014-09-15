@@ -25,7 +25,7 @@ public class AckleyEvaluation implements ContestEvaluation
 	private int evaluations_;
 	
 	// Properties of the evaluation
-	private String multimodal_ = "false";
+	private String multimodal_ = "true";
 	private String regular_ = "true";
 	private String separable_ = "false";
 	private String evals_ = Integer.toString(EVALS_LIMIT_);

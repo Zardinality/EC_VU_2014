@@ -122,7 +122,7 @@ public class player19 implements ContestSubmission
 		return g;
 	}
 	
-        private double[][] recombination(double[][] g, int length, int lambda, int population, int method)
+	private double[][] recombination(double[][] g, int length, int lambda, int population, int method)
         {
             int[] index = new int[2];
             double[][] gnext = new double[lambda][length];
@@ -169,7 +169,7 @@ public class player19 implements ContestSubmission
 			{
 				gtemp[i][j] = gnext[i][j] + r + llr_ * rnd_.nextGaussian();
 				if(gtemp[i][j] < sigma) gtemp[i][j] = sigma;
-			}
+			}/*
 			for(j = 20; j < 65; j++)
 			{
 				gtemp[i][j] = gnext[i][j] + beta_ * rnd_.nextGaussian();
@@ -207,7 +207,7 @@ public class player19 implements ContestSubmission
 					sum += L[j][k] * x[k];
 				}
 				gtemp[i][j] = gnext[i][j] + sum;
-			}
+			}*/
 			for(j = 0; j < 10; j++)
 			{
 				gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
@@ -215,8 +215,7 @@ public class player19 implements ContestSubmission
 		}
 		return gtemp;
 	}
-	
-	
+
 	private double[][] selection(double[][] gnext)
 	{
 		int i,j,k;
@@ -246,31 +245,14 @@ public class player19 implements ContestSubmission
 		return g;
 	}
 	
-        private void evolution(boolean mm, boolean rg, boolean sp)
-        {
-            double[] g;
-            if (!mm) func1();
-            else if (rg) func3();
-            else func3();
-        }
-        
-	private double[] separable(boolean rg)
+	private void evolution(boolean mm, boolean rg, boolean sp)
 	{
-		int i,j,k;
-		double[] g = new double[10];
-		for(i = 0; i < 10; i++)
-		{
-			if(rg)
-			{
-				g[i] = trialRg(i,(population_ - 1)/10);
-			}
-			else
-			{
-				g[i] = trial(i,(population_ - 1)/10);
-			}
-		}
-		return g;
+		double[] g;
+		if (!mm) func1();
+		else if (rg) func3();
+		else func3();
 	}
+        
 	
 	private double trial(int dim, int population)
 	{
@@ -421,34 +403,24 @@ public class player19 implements ContestSubmission
 		return best;
 	}
 	
-		private void func1()
-        {
-                double[] g = new double[DIM];
-                for (int i = 0; i < DIM; i++) g[i] = trial(i, (population_/2 - 1) / DIM);
-                for (int i = 0; i < DIM; i++) g[i] = trial(i, (population_/2 - 1) / DIM);
-                evaluation_.evaluate(g);
-        }
-        
-        private void func2()
-        {
-                double[] g = new double[DIM];
-                for (int i = 0; i < DIM; i++)
-                {
-                        g[i] = trialRg(i, (population_ - 1) / DIM);
-                }
-                evaluation_.evaluate(g);
-        }
-        
-        private void func3()
+	private void func1()
 	{
-            double[][] g = samplingES();
-            double[][] gnext = new double[lambda_][65];
-            for (int i = 0; i < generation_; i++)
-            {
-                gnext = recombination(g, 65, lambda_, population_, RECOMB_MEAN);
-                gnext = mutation(gnext);
-                g = selection(gnext);
-            }
+		double[] g = new double[DIM];
+		for (int i = 0; i < DIM; i++) g[i] = trial(i, (population_/2 - 1) / DIM);
+		for (int i = 0; i < DIM; i++) g[i] = trial(i, (population_/2 - 1) / DIM);
+		evaluation_.evaluate(g);
+	}
+        
+	private void func3()
+	{
+		double[][] g = samplingES();
+		double[][] gnext = new double[lambda_][65];
+		for (int i = 0; i < generation_; i++)
+		{
+			gnext = recombination(g, 65, lambda_, population_, RECOMB_MEAN);
+			gnext = mutation(gnext);
+			g = selection(gnext);
+		}
 	}
  	
 	public Double getResult()
