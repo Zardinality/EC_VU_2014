@@ -21,12 +21,15 @@ public class player19 implements ContestSubmission
 	double llr_;//local learning rate
 	double beta_;//turning angle
 	int algIndex_;
+	double[] var_;
         
-        boolean mm_, rg_, sp_;
+	boolean mm_, rg_, sp_;
 	
 	public player19()
 	{
 		rnd_ = new Random();
+		var_ = new double[10];
+		for(int i=0;i<10;i++) var_[i] = 1;
 	}
 	
 	
@@ -290,6 +293,10 @@ public class player19 implements ContestSubmission
 		}
 		gnext = gd_recomb(g,dim);
 		best = (gnext[1][0]+gnext[2][0])/2;
+		var_[dim] = best;
+		//if (gnext[1][1]>gnext[2][1]) best = gnext[1][0];
+		//else best = gnext[2][0];
+		best = (gnext[1][0]+gnext[2][0])/2;
 		return best;
 	}
 	
@@ -335,8 +342,8 @@ public class player19 implements ContestSubmission
 	private double gd_evaluate(int dim, double g)
 	{
 		double score = 0;
-		double[] var = new double[10];
-		for(int i=1;i<10;i++) var[i] = 1;
+		double[] var = var_;
+		//for(int i=1;i<10;i++) var[i] = -1;
 		var[dim] = g;
 		score = (Double)evaluation_.evaluate(var);
 		return score;
@@ -417,10 +424,8 @@ public class player19 implements ContestSubmission
 		private void func1()
         {
                 double[] g = new double[DIM];
-                for (int i = 0; i < DIM; i++)
-                {
-                        g[i] = trial(i, (population_ - 1) / DIM);
-                }
+                for (int i = 0; i < DIM; i++) g[i] = trial(i, (population_/2 - 1) / DIM);
+                for (int i = 0; i < DIM; i++) g[i] = trial(i, (population_/2 - 1) / DIM);
                 evaluation_.evaluate(g);
         }
         
