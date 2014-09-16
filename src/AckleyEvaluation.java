@@ -64,10 +64,11 @@ public class AckleyEvaluation implements ContestEvaluation
 		// Transform function value (sphere is minimization).
 		// Normalize using the base performance
 		double f = 20 * Math.exp(-0.2 * Math.sqrt(0.1 * func1(ind))) + Math.exp(0.1 * func2(ind)) - 10 - Math.exp(1);//10 - 10*( (function(ind)-ftarget_) / BASE_ ) ;
-		if(f>best_) best_ = f;
+		double score = f * 2 - 10;
+		if(score>best_) best_ = score;
 		evaluations_++;
 		
-		return new Double(f);
+		return new Double(score);
 	}
 
 	@Override
