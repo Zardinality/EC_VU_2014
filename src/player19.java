@@ -4,6 +4,7 @@ import org.vu.contest.ContestEvaluation;
 import java.util.Random;
 import java.util.Properties;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.lang.Math;
 
 public class player19 implements ContestSubmission
@@ -17,6 +18,7 @@ public class player19 implements ContestSubmission
 	Integer population_;
 	Integer generation_;
 	Integer lambda_;//number# of offspring
+	int limit_;
 	double glr_;//global learning rate
 	double llr_;//local learning rate
 	double beta_;//turning angle
@@ -52,33 +54,33 @@ public class player19 implements ContestSubmission
 		mm_ = Boolean.parseBoolean(props.getProperty("Multimodal"));
 		rg_ = Boolean.parseBoolean(props.getProperty("Regular"));
 		sp_ = Boolean.parseBoolean(props.getProperty("Separable"));
-		double limit = Double.parseDouble(props.getProperty("Evaluations"));
+		limit_ = (int)Double.parseDouble(props.getProperty("Evaluations"));
 		// Do sth with property values, e.g. specify relevant settings of your algorithm
-		population_ = (int)Math.round(Math.sqrt(limit))/8;
-		generation_ = ((int)Math.floor(limit)-population_)/(population_*6);
-		glr_ = 1/Math.sqrt(2 * limit);
-		llr_ = 1/Math.sqrt(2 * Math.sqrt(limit));
+		population_ = (int)Math.round(Math.sqrt(limit_))/8;
+		generation_ = ((int)Math.floor(limit_)-population_)/(population_*6);
+		glr_ = 1/Math.sqrt(2 * limit_);
+		llr_ = 1/Math.sqrt(2 * Math.sqrt(limit_));
 		lambda_ = population_ * 6;
 		beta_ = 0.087266462599716;
 		algIndex_ = 0;
  		if(sp_)
 		{
 		
-			population_ = (int)Math.floor(limit);
+			population_ = (int)Math.floor(limit_);
 			algIndex_ = 1;
 		}
 		else if(rg_)
 		{
 			population_ = 60;
 			lambda_ = 200;
-			generation_ = ((int)Math.floor(limit)-population_)/lambda_;
+			generation_ = ((int)Math.floor(limit_)-population_)/lambda_;
 			algIndex_ = 3;
 		}
 		else
 		{
 			population_ = 60;
 			lambda_ = 200;
-			generation_ = ((int)Math.floor(limit)-population_)/lambda_;
+			generation_ = ((int)Math.floor(limit_)-population_)/lambda_;
 			algIndex_ = 3; 
 		}
  		
@@ -93,10 +95,10 @@ public class player19 implements ContestSubmission
 	private double[][] sampling(int population)
 	{
 		int i,j,k;
-		double[][] g = new double[population][10]; 
+		double[][] g = new double[population][DIM]; 
 		for(i=0;i<population;i++)
 		{
-			for(j=0;j<10;j++)
+			for(j=0;j<DIM;j++)
 			{
 				g[i][j] = rnd_.nextDouble()*10-5;
 			}
@@ -257,8 +259,8 @@ public class player19 implements ContestSubmission
 	{
 		double[] g;
 		if (!mm) func1();
-		else if (rg) func3();
-		else func3();
+		else if (rg) func6();
+		else func6();
 	}
         
 	
@@ -440,4 +442,118 @@ public class player19 implements ContestSubmission
 		for(int i = 0; i<population_;i++) evaluation_.evaluate(g[i]);
 	}
 	
+	private void func5()
+	{
+		// put value in parameters (quite a lot...)
+		int lambda = 100;
+		int mu = lambda / 2;
+		double mu2 = (double)lambda / 2;
+		double[] weight = new double[mu];
+		double[] weight2 = new double[mu];
+		double sum = 0.0;
+		for (int i = 0; i < mu; i++){
+			weight2[i] = Math.log(mu2 + 0.5) - Math.log(i);
+			sum += weight2[i];
+		}
+		double sum2 = 0.0;
+		for (int i = 0; i < mu; i++){
+			weight[i] = weight2[i] / sum;
+			sum2 += Math.pow(weight[i], 2);
+		}
+		double mu_eff = 1/sum2;
+		double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
+		double d_sigma = 1 + 2 * Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1) + c_sigma;
+		double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
+		double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
+		double alpha_mu = 2;
+		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1/mu_eff) / (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
+		double E_norm = Math.sqrt(DIM) * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM,2)));
+		
+		//initialization
+		double p_sigma = 0;
+		double p_c = 0;
+		double h_sigma = 0;
+		double[][] g = sampling(population_);
+		double[] mean = new double[DIM];
+		for (int i = 0; i < generation_; i++)
+		{
+			g = CMA_sort(g);
+			mean = CMA_mean(g, weight, mu);
+			
+		}
+	}
+	
+	private double[][] CMA_sort(double[][] g)
+	{
+		Arrays.sort(g, new Comparator<double[]>(){
+			@Override
+			public int compare(double[] a, double[] b) {return Double.compare(b[0],a[0]);}
+		});
+		return g;
+	}
+	
+	private double[] CMA_mean(double[][] g, double[] weight, int mu)
+	{
+		double[] m = new double[DIM];
+		double[] sum = new double[DIM];
+		int l = g.length;
+		if(mu > l) throw new RuntimeException("mu > l");
+		
+		for(int i = 0; i < DIM; i++)
+		{
+			sum[i] = 0;
+			for (int j = 0; j < mu; j++) sum[i] += weight[j] * g[i][j];
+			m[i] = sum[i] / l;
+		}
+		return m;		
+	}
+	
+	private void func6()
+	{
+		//set parameters
+		double CR = 0.1;//also try 0.9 and 1
+		double F = 0.5;//initial, can be further increased
+		int population = 100;
+		int generation = limit_ / population - 1;
+		
+		//initialization
+		double randr = 0.0;
+		int randi = 0;
+		int a,b,c;
+		double[][] g = sampling(population);
+		double[] score = new double[population];
+		for(int i = 0; i < population; i++) score[i] = (Double)evaluation_.evaluate(g[i]);
+		double[] y = new double[DIM];
+		double score_neo = 0;
+		for(int i = 0; i < generation; i++)
+		{
+			for(int j = 0; j < population; j++)
+			{
+				score_neo = 0;
+				do {a = rnd_.nextInt(population);} while(a == j);
+				do {b = rnd_.nextInt(population);} while(b == j || b == a);
+				do {c = rnd_.nextInt(population);} while(c == j || c == a || c == b);
+				randi = rnd_.nextInt(DIM);
+				for(int k = 0; k < DIM; k++)
+				{
+					randr = rnd_.nextDouble();
+					if(randi == k || randr < CR)
+					{
+						y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
+					}
+					else
+					{
+						y[k] = g[j][k];
+					}
+				}
+				score_neo = (Double)evaluation_.evaluate(y);
+				if(score_neo > score[j])
+				{
+					g[j] = y.clone();
+					score[j] = score_neo;
+				}
+			}
+		}
+		
+	}
 }
