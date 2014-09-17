@@ -23,7 +23,7 @@ public class Main {
 		}
 		score = sum/trailnum;
 		System.out.println(Double.toString(score));
-		sum = 0;
+		/*sum = 0;
 		score = 0;
 		for(i = 0; i < trailnum; i++)
 		{
@@ -50,7 +50,7 @@ public class Main {
 			sum += result[i];
 		}
 		score = sum/trailnum;
-		System.out.println(Double.toString(score));
+		System.out.println(Double.toString(score));*/
 	}
 
 }

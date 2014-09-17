@@ -397,10 +397,10 @@ public class player19 implements ContestSubmission
 	private void func1()
 	{
 		double[] g = new double[DIM];
-		int pop = 400;//population_/2 - 1;
+		int pop = 80;//population_/2 - 1;
 		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
 		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
-		pop = 500;
+		pop = 80;
 		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
 		evaluation_.evaluate(g);
 	}
@@ -425,7 +425,7 @@ public class player19 implements ContestSubmission
 	
 	private void func5()
 	{
-		// put value in parameters (quite a lot...)
+		// set parameters (quite a lot...)
 		int lambda = 100;
 		int mu = lambda / 2;
 		double mu2 = (double)lambda / 2;
