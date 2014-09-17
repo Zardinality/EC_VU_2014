@@ -2,7 +2,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		int trailnum = 20;
+		int trailnum = 10;
 		int i,j;
 		double[] result = new double[trailnum];
 		double sum = 0;

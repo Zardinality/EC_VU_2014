@@ -63,26 +63,7 @@ public class player19 implements ContestSubmission
 		lambda_ = population_ * 6;
 		beta_ = 0.087266462599716;
 		algIndex_ = 0;
- 		if(sp_)
-		{
-		
-			population_ = (int)Math.floor(limit_);
-			algIndex_ = 1;
-		}
-		else if(rg_)
-		{
-			population_ = 60;
-			lambda_ = 200;
-			generation_ = ((int)Math.floor(limit_)-population_)/lambda_;
-			algIndex_ = 3;
-		}
-		else
-		{
-			population_ = 60;
-			lambda_ = 200;
-			generation_ = ((int)Math.floor(limit_)-population_)/lambda_;
-			algIndex_ = 3; 
-		}
+
  		
 	}
 	
