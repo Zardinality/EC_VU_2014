@@ -241,7 +241,7 @@ public class player19 implements ContestSubmission
 		double[] g;
 		if (!mm) func1();
 		else if (rg) func6();
-		else func6();
+		else func7();
 	}
         
 	
