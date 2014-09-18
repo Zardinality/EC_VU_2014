@@ -9,7 +9,7 @@ import java.lang.Math;
 public class FletcherEvaluation implements ContestEvaluation{
 	
 	
-	private final static int EVALS_LIMIT_ = 1000000;
+	private final static int EVALS_LIMIT_ = 500000;
 	private double best_;
 	private int evaluations_;
 	
@@ -24,7 +24,7 @@ public class FletcherEvaluation implements ContestEvaluation{
 	
 	public FletcherEvaluation()
 	{
-		best_ = -1000000;
+		best_ = -100;
 		evaluations_ = 0;
 		rnd_ = new Random();
 		rnd_.setSeed(0);
@@ -82,7 +82,7 @@ public class FletcherEvaluation implements ContestEvaluation{
 		if(evaluations_>EVALS_LIMIT_) return null;
 
 		double f = 0;
-		f = 10 - func(ind,alpha_,a_,b_)/1000;
+		f = 10 - func(ind,alpha_,a_,b_);
 		if(f>best_) best_ = f;
 		evaluations_++;
 		
