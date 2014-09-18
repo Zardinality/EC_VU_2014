@@ -239,7 +239,7 @@ public class player19 implements ContestSubmission
 	private void evolution(boolean mm, boolean rg, boolean sp)
 	{
 		double[] g;
-		if (!mm) func8();
+		if (!mm) func1();
 		else if (rg) func8();
 		else func8();
 	}
@@ -397,10 +397,10 @@ public class player19 implements ContestSubmission
 	private void func1()
 	{
 		double[] g = new double[DIM];
-		int pop = 80;//population_/2 - 1;
+		int pop = 400;//population_/2 - 1;
 		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
 		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
-		pop = 80;
+		pop = 500;
 		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
 		evaluation_.evaluate(g);
 	}
@@ -601,7 +601,7 @@ public class player19 implements ContestSubmission
 	private void func8()
 	{
 		//set parameters
-		double F_l = 0.1;
+		double F_l = 0.2;
 		double F_u = 0.9;
 		
 		int population = 100;
@@ -622,8 +622,8 @@ public class player19 implements ContestSubmission
 		for(int i = 0; i < population; i++) 
 		{
 			score[i] = (Double)evaluation_.evaluate(g[i]);
-			CR[i] = 0.5;
-			F[i] = 0.5;
+			CR[i] = 0.6;
+			F[i] = 0.6;
 		}
 		double[] y = new double[DIM];
 		double score_neo = 0;
