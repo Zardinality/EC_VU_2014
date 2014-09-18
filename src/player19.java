@@ -493,8 +493,8 @@ public class player19 implements ContestSubmission
 	{
 		//set parameters
 		double CR = 0.1;//also try 0.9 and 1
-		double F = 0.5;//initial, can be further increased
-		int population = 100;
+		double F = 0.6;//initial, can be further increased
+		int population = 80;
 		int generation = limit_ / population - 1;
 		
 		//initialization
@@ -537,4 +537,54 @@ public class player19 implements ContestSubmission
 		}
 		
 	}
+	
+	private void func7()
+	{
+		//set parameters
+		double CR = 0.1;//also try 0.9 and 1
+		double F = 0.5;//initial, can be further increased
+		int population = 100;
+		int generation = limit_ / 2 * population - 1;
+		
+		//initialization
+		double randr = 0.0;
+		int randi = 0;
+		int a,b,c;
+		double[][] g = sampling(population);
+		double[] score = new double[population];
+		for(int i = 0; i < population; i++) score[i] = (Double)evaluation_.evaluate(g[i]);
+		double[] y = new double[DIM];
+		double score_neo = 0;
+		for(int i = 0; i < generation; i++)
+		{
+			for(int j = 0; j < population; j++)
+			{
+				score_neo = 0;
+				do {a = rnd_.nextInt(population);} while(a == j);
+				do {b = rnd_.nextInt(population);} while(b == j || b == a);
+				do {c = rnd_.nextInt(population);} while(c == j || c == a || c == b);
+				randi = rnd_.nextInt(DIM);
+				for(int k = 0; k < DIM; k++)
+				{
+					randr = rnd_.nextDouble();
+					if(randi == k || randr < CR)
+					{
+						y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
+					}
+					else
+					{
+						y[k] = g[j][k];
+					}
+				}
+				score_neo = (Double)evaluation_.evaluate(y);
+				if(score_neo > score[j])
+				{
+					g[j] = y.clone();
+					score[j] = score_neo;
+				}
+			}
+		}
+		
+	}
+
 }
