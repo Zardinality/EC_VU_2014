@@ -544,7 +544,7 @@ public class player19 implements ContestSubmission
 		double CR = 0.1;//also try 0.9 and 1
 		double F = 0.5;//initial, can be further increased
 		int population = 100;
-		int generation = limit_ / 2 * population - 1;
+		int generation = limit_ / (2 * population) - 1;
 		
 		//initialization
 		double randr = 0.0;
