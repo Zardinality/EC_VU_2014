@@ -73,6 +73,14 @@ public class player19 implements ContestSubmission
                 evolution(mm_, rg_, sp_);
 	}
 	
+	private void evolution(boolean mm, boolean rg, boolean sp)
+	{
+		double[] g;
+		if (!mm) func8();
+		else if (rg) func8();
+		else func8();
+	}
+	
 	private double[][] sampling(int population)
 	{
 		int i,j,k;
@@ -235,15 +243,7 @@ public class player19 implements ContestSubmission
 		}
 		return g;
 	}
-	
-	private void evolution(boolean mm, boolean rg, boolean sp)
-	{
-		double[] g;
-		if (!mm) func1();
-		else if (rg) func8();
-		else func8();
-	}
-        
+
 	
 	private double trial(int dim, int population)
 	{
@@ -492,8 +492,8 @@ public class player19 implements ContestSubmission
 	private void func6()
 	{
 		//set parameters
-		double CR = 0.1;//also try 0.9 and 1
-		double F = 0.6;//initial, can be further increased
+		double CR = 0.9;//also try 0.9 and 1
+		double F = 0.9;//initial, can be further increased
 		int population = 80;
 		int generation = limit_ / population - 1;
 		
@@ -601,19 +601,22 @@ public class player19 implements ContestSubmission
 	private void func8()
 	{
 		//set parameters
-		double F_l = 0.2;
+		double F_l = 0.1;
 		double F_u = 0.9;
 		
 		int population = 100;
 		int generation = limit_ / population - 1;
-		double tao_1 = 0.1;
-		double tao_2 = 0.1;
+		double tao_1 = 0.2;
+		double tao_2 = 0.2;
 		
 		//initialization
 		double[] CR = new double[population];
 		double[] F = new double[population];
 		double CR1,F1;
 		double randr = 0.0;
+		double[] bestX = new double[DIM];
+		double best = 0.0;
+		int gen = 0;
 		
 		int randi = 0;
 		int a,b,c;
@@ -624,6 +627,11 @@ public class player19 implements ContestSubmission
 			score[i] = (Double)evaluation_.evaluate(g[i]);
 			CR[i] = 0.6;
 			F[i] = 0.6;
+			if(score[i] > best)
+			{
+				best = score[i];
+				bestX = g[i].clone();
+			}
 		}
 		double[] y = new double[DIM];
 		double score_neo = 0;
@@ -663,6 +671,59 @@ public class player19 implements ContestSubmission
 					score[j] = score_neo;
 					F[j] = F1;
 					CR[j] = CR1;
+					if(score[j] > best)
+					{
+						best = score[j];
+						bestX = g[j].clone();
+					}
+				}
+			}
+			gen++;
+			if(10 - best < 0.001) break;
+		}
+		//System.out.println(Integer.toString(gen));
+		for(int i = gen; i < generation; i++)
+		{
+			for(int j = 0; j < population; j++)
+			{
+				
+				if(rnd_.nextDouble() < tao_1) F1 = F[j] + 0.1 *rnd_.nextGaussian();//F_l + rnd_.nextDouble() * F_u;
+				else F1 = F[j];
+				
+				if(rnd_.nextDouble() < tao_2) CR1 = CR[j] + 0.1 *rnd_.nextGaussian();//rnd_.nextDouble();
+				else CR1 = CR[j];
+				
+				score_neo = 0;
+				do a = rnd_.nextInt(population); while(a == j);
+				do b = rnd_.nextInt(population); while(b == j || b == a);
+				do c = rnd_.nextInt(population); while(c == j || c == a || c == b);
+				randi = rnd_.nextInt(DIM);
+				for(int k = 0; k < DIM; k++)
+				{
+					randr = rnd_.nextDouble();
+					if(randi == k || randr < CR1)
+					{
+						y[k] = g[a][k] + F1 * (bestX[k] - g[a][k]) + F1 * (g[b][k] - g[c][k]);
+						y[k] = Math.max(y[k],-5);
+						y[k] = Math.min(y[k],5);
+					}
+					else
+					{
+						y[k] = g[j][k];
+					}
+				}
+				score_neo = (Double)evaluation_.evaluate(y);
+				if(score_neo > score[j])
+				{
+					g[j] = y.clone();
+					score[j] = score_neo;
+					F[j] = F1;
+					CR[j] = CR1;
+					if(score[j] > best)
+					{
+						best = score[j];
+						bestX = g[j].clone();
+					}
 				}
 			}
 		}
