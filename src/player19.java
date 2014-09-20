@@ -76,9 +76,9 @@ public class player19 implements ContestSubmission
 	private void evolution(boolean mm, boolean rg, boolean sp)
 	{
 		double[] g;
-		if (!mm) func8();
+		if (!mm) func1();
 		else if (rg) func8();
-		else func8();
+		else func6();
 	}
 	
 	private double[][] sampling(int population)
@@ -679,7 +679,7 @@ public class player19 implements ContestSubmission
 				}
 			}
 			gen++;
-			if(10 - best < 0.001) break;
+			if(10 - best < 0.0001) break;
 		}
 		//System.out.println(Integer.toString(gen));
 		for(int i = gen; i < generation; i++)
