@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.Math;
+
 import org.apache.commons.math3.linear.*;
 
 public class player19 implements ContestSubmission {
@@ -71,13 +72,13 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void evolution(boolean mm, boolean rg, boolean sp) {
-		double[] g;
+		// TODO
 		if (!mm)
 			golden();
 		else if (rg)
 			SSaDE();
 		else
-			SaDE();
+			DE();
 	}
 
 	private double[][] sampling(int population) {
@@ -110,7 +111,7 @@ public class player19 implements ContestSubmission {
 		return g;
 	}
 
-	private double[][] recombination(double[][] g, int length, int lambda,
+	private double[][] ES_recombination(double[][] g, int length, int lambda,
 			int population, int method) {
 		int[] index = new int[2];
 		double[][] gnext = new double[lambda][length];
@@ -139,8 +140,7 @@ public class player19 implements ContestSubmission {
 		return gnext;
 	}
 
-	private double[][] mutation(double[][] gnext) {
-		int i, j;
+	private double[][] ES_mutation(double[][] gnext) {
 		double sum;
 		double r = 0.0;
 		double sigma = 0.01;
@@ -148,38 +148,68 @@ public class player19 implements ContestSubmission {
 		double[][] L = new double[10][10];
 		double[][] gtemp = new double[lambda_][65];
 		double[] x = new double[10];
-		for (i = 0; i < lambda_; i++) {
+		for (int i = 0; i < lambda_; i++) {
 			r = glr_ * rnd_.nextGaussian();
-			for (j = 10; j < 20; j++) {
+			for (int j = 10; j < 20; j++) {
 				gtemp[i][j] = gnext[i][j] + r + llr_ * rnd_.nextGaussian();
 				gtemp[i][j] = Math.max(gtemp[i][j], sigma);
-			}/*
-			 * for(j = 20; j < 65; j++) { gtemp[i][j] = gnext[i][j] + beta_ *
-			 * rnd_.nextGaussian(); if(gtemp[i][j] > Math.PI) gtemp[i][j] -= 2 *
-			 * Math.PI; else if(gtemp[i][j] < -Math.PI) gtemp[i][j] += 2 *
-			 * Math.PI; } for(j = 0; j < 10; j++) { for(k = 0; k < 10; k++) {
-			 * if(j > k) { cov[j][k] = -0.5 * (gtemp[i][10+j] * gtemp[i][10+j] -
-			 * gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 *
-			 * gtemp[i][19+(19-k)*k/2+j-k]); } else if(j < k) { cov[j][k] = 0.5
-			 * * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] *
-			 * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-j)*j/2+k-j]); }
-			 * else { cov[j][k] = gtemp[i][10+j] * gtemp[i][10+j]; } } } L =
-			 * Cholesky.cholesky(cov); for(j = 0; j < 10; j++) { x[j] =
-			 * rnd_.nextGaussian(); } for(j = 0; j < 10; j++) { sum = 0; for(k =
-			 * 0; k < j+1; k++) { sum += L[j][k] * x[k]; } gtemp[i][j] =
-			 * gnext[i][j] + sum; }
-			 */
-			for (j = 0; j < 10; j++) {
+			}
+			for (int j = 20; j < 65; j++) {
+				gtemp[i][j] = gnext[i][j] + beta_ * rnd_.nextGaussian();
+				if (gtemp[i][j] > Math.PI / 4)
+					gtemp[i][j] -= Math.PI / 2;
+				else if (gtemp[i][j] < -Math.PI / 4)
+					gtemp[i][j] += Math.PI / 2;
+			}
+			for (int j = 0; j < 10; j++) {
+				for (int k = 0; k < 10; k++) {
+					if (j > k) {
+						cov[j][k] = -0.5
+								* (gtemp[i][10 + j] * gtemp[i][10 + j] - gtemp[i][10 + k]
+										* gtemp[i][10 + k])
+								* Math.tan(2 * gtemp[i][19 + (19 - k) * k / 2
+										+ j - k]);
+					} else if (j < k) {
+						cov[j][k] = 0.5
+								* (gtemp[i][10 + j] * gtemp[i][10 + j] - gtemp[i][10 + k]
+										* gtemp[i][10 + k])
+								* Math.tan(2 * gtemp[i][19 + (19 - j) * j / 2
+										+ k - j]);
+					} else {
+						cov[j][k] = gtemp[i][10 + j] * gtemp[i][10 + j];
+					}
+				}
+			}
+			L = cholesky(cov);
+			for (int j = 0; j < 10; j++) {
+				x[j] = rnd_.nextGaussian();
+			}
+			for (int j = 0; j < 10; j++) {
+				sum = 0;
+				for (int k = 0; k < j + 1; k++) {
+					sum += L[j][k] * x[k];
+				}
+				gtemp[i][j] = gnext[i][j] + sum;
+			}
+			/*
+			for (int j = 0; j < 10; j++) {
 				gtemp[i][j] = gnext[i][j] + gtemp[i][j + 10]
 						* rnd_.nextGaussian();
 				gtemp[i][j] = Math.max(gtemp[i][j], -5);
 				gtemp[i][j] = Math.min(gtemp[i][j], 5);
-			}
+			}*/
 		}
 		return gtemp;
 	}
 
-	private double[][] selection(double[][] gnext) {
+	private double[][] cholesky(double[][] cov) {
+		RealMatrix C = new Array2DRowRealMatrix(cov);
+		CholeskyDecomposition cho = new CholeskyDecomposition(C);
+		RealMatrix L = cho.getL();
+		return L.getData();
+	}
+	
+	private double[][] ES_selection(double[][] gnext) {
 		int i, j, k;
 		int index = 0;
 		double[][] g = new double[population_][65];
@@ -204,6 +234,8 @@ public class player19 implements ContestSubmission {
 		return g;
 	}
 
+
+	
 	private double trial(int dim, int population) {
 		int i, j, k;
 		double best = 0;
@@ -230,6 +262,19 @@ public class player19 implements ContestSubmission {
 		return best;
 	}
 
+	private void golden() {
+		double[] g = new double[DIM];
+		int pop = 400;// population_/2 - 1;
+		for (int i = 0; i < DIM; i++)
+			g[i] = trial(i, (pop) / DIM);
+		for (int i = 0; i < DIM; i++)
+			g[i] = trial(i, (pop) / DIM);
+		pop = 500;
+		for (int i = 0; i < DIM; i++)
+			g[i] = trial(i, (pop) / DIM);
+		evaluation_.evaluate(g);
+	}
+	
 	private double[][] gd_select(double[][] gnext) {
 		double[][] g = new double[3][2];
 		if (gnext[1][1] < gnext[2][1]) {
@@ -270,6 +315,8 @@ public class player19 implements ContestSubmission {
 		return score;
 	}
 
+	
+	// can't understand now......
 	private double trialRg(int dim, int population) {
 		int i, j, k;
 		double best = 0;
@@ -329,26 +376,13 @@ public class player19 implements ContestSubmission {
 		return best;
 	}
 
-	private void golden() {
-		double[] g = new double[DIM];
-		int pop = 400;// population_/2 - 1;
-		for (int i = 0; i < DIM; i++)
-			g[i] = trial(i, (pop) / DIM);
-		for (int i = 0; i < DIM; i++)
-			g[i] = trial(i, (pop) / DIM);
-		pop = 500;
-		for (int i = 0; i < DIM; i++)
-			g[i] = trial(i, (pop) / DIM);
-		evaluation_.evaluate(g);
-	}
-
 	private void ES() {
 		double[][] g = samplingES();
 		double[][] gnext = new double[lambda_][65];
 		for (int i = 0; i < generation_; i++) {
-			gnext = recombination(g, 65, lambda_, population_, RECOMB_MEAN);
-			gnext = mutation(gnext);
-			g = selection(gnext);
+			gnext = ES_recombination(g, 65, lambda_, population_, RECOMB_MEAN);
+			gnext = ES_mutation(gnext);
+			g = ES_selection(gnext);
 		}
 	}
 
@@ -399,6 +433,8 @@ public class player19 implements ContestSubmission {
 		double[] yw = new double[DIM];
 		double[] mean = new double[DIM];
 		double sigma = 3;
+		
+		
 		for (int i = 0; i < generation_; i++) {
 			g = CMA_sort(g);
 			yw = CMA_mean(g, weight, mu);
@@ -470,7 +506,7 @@ public class player19 implements ContestSubmission {
 		// set parameters
 		double CR = 0.9;// also try 0.9 and 1
 		double F = 0.9;// initial, can be further increased
-		int population = 80;
+		int population = 500;
 		int generation = limit_ / population - 1;
 
 		// initialization
@@ -660,7 +696,7 @@ public class player19 implements ContestSubmission {
 				}
 			}
 			gen++;
-			if (10 - best < 0.0001)
+			if (10 - best < 0.00001)
 				break;
 		}
 		//System.out.println(Integer.toString(gen));
@@ -678,7 +714,7 @@ public class player19 implements ContestSubmission {
 					F1 = F[j];
 
 				if (rnd_.nextDouble() < tao_2)
-					CR1 = CR[j] + 0.1 * rnd_.nextGaussian();// rnd_.nextDouble();
+					CR1 = rnd_.nextDouble();
 				else
 					CR1 = CR[j];
 
