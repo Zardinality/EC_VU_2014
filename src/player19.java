@@ -6,6 +6,11 @@ import java.util.Properties;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.Math;
+import org.apache.commons.math3.linear.*;
+//import org.apache.commons.*;
+//import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+//import org.apache.commons.math3.linear.EigenDecomposition;
+//import org.apache.commons.math3.linear.RealMatrix;
 
 public class player19 implements ContestSubmission
 {
@@ -24,7 +29,6 @@ public class player19 implements ContestSubmission
 	double beta_;//turning angle
 	int algIndex_;
 	double[] var_;//store the best
-        
 	boolean mm_, rg_, sp_;
 	
 	public player19()
@@ -426,11 +430,11 @@ public class player19 implements ContestSubmission
 	private void func5()
 	{
 		// set parameters (quite a lot...)
-		int lambda = 100;
-		int mu = lambda / 2;
-		double mu2 = (double)lambda / 2;
-		double[] weight = new double[mu];
-		double[] weight2 = new double[mu];
+		int lambda = 100;//lambda
+		int mu = lambda / 2;//mu
+		double mu2 = (double)lambda / 2;//mu'
+		double[] weight = new double[mu];//w
+		double[] weight2 = new double[mu];//w'
 		double sum = 0.0;
 		for (int i = 0; i < mu; i++){
 			weight2[i] = Math.log(mu2 + 0.5) - Math.log(i);
@@ -456,12 +460,22 @@ public class player19 implements ContestSubmission
 		double h_sigma = 0;
 		double[][] g = sampling(population_);
 		double[] mean = new double[DIM];
+		double sigma = 3;
 		for (int i = 0; i < generation_; i++)
 		{
-			g = CMA_sort(g);
-			mean = CMA_mean(g, weight, mu);
+			//g = CMA_sort(g);
+			//mean = CMA_mean(g, weight, mu);
+			
 			
 		}
+	}
+	
+	private double[][] CMA_sample(int lambda, int mu, double m,double sigma,double[][] C)
+	{
+		double[][] g = new double[lambda][DIM];
+		
+		
+		return g;
 	}
 	
 	private double[][] CMA_sort(double[][] g)
@@ -682,11 +696,17 @@ public class player19 implements ContestSubmission
 			if(10 - best < 0.0001) break;
 		}
 		//System.out.println(Integer.toString(gen));
+		for(int i = 0; i < population; i++)
+		{
+			for(int j = 0; j < DIM; j++)
+			{
+				g[i][j] = bestX[j] + 0.01 * rnd_.nextGaussian();
+			}
+		}
 		for(int i = gen; i < generation; i++)
 		{
 			for(int j = 0; j < population; j++)
 			{
-				
 				if(rnd_.nextDouble() < tao_1) F1 = F[j] + 0.1 *rnd_.nextGaussian();//F_l + rnd_.nextDouble() * F_u;
 				else F1 = F[j];
 				
