@@ -393,27 +393,41 @@ public class player19 implements ContestSubmission {
 		double p_norm = 0;
 		double[] p_c = new double[DIM];
 		double h_sigma = 0;
-		double[][] g = sampling(population_);
-		RealMatrix B, C, D, BT;
-		EigenDecomposition c, d;
-		double[] yw = new double[DIM];
+		//double[][] g = sampling(population_);
+		RealMatrix C = MatrixUtils.createRealIdentityMatrix(DIM);
+		//double[] yw = new double[DIM];
 		double[] mean = new double[DIM];
 		double sigma = 3;
-		for (int i = 0; i < generation_; i++) {
-			g = CMA_sort(g);
-			yw = CMA_mean(g, weight, mu);
-			for (int j = 0; j < DIM; j++) {
-				mean[j] += sigma * yw[j];
-				p_sigma[j] = (1 - c_sigma) * p_sigma[j]
-						+ Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff) * yw[j];
-			}
-			p_norm = 0;// TODO
-			sigma = sigma * Math.exp(c_sigma / d_sigma * (p_norm / E_norm - 1));
-			if (p_norm / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (i + 1))) < (1.4 + 2 / (DIM + 1))
-					* E_norm)
-				h_sigma = 1;
-
-		}
+                
+                // evolution
+//		for (int i = 0; i < generation_; i++) {
+//			g = CMA_sort(g);
+//			yw = CMA_mean(g, weight, mu);
+//			for (int j = 0; j < DIM; j++) {
+//				mean[j] += sigma * yw[j];
+//				p_sigma[j] = (1 - c_sigma) * p_sigma[j]
+//						+ Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff) * yw[j];
+//			}
+//			p_norm = 0;// TODO
+//			sigma = sigma * Math.exp(c_sigma / d_sigma * (p_norm / E_norm - 1));
+//			if (p_norm / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (i + 1))) < (1.4 + 2 / (DIM + 1))
+//					* E_norm)
+//				h_sigma = 1;
+//
+//		}
+                
+                RealVector[] x = new RealVector[lambda];
+                RealVector[] y = new RealVector[lambda];
+                RealVector[] z = new RealVector[lambda];
+                for (int i = 0; i < generation_; i++) {
+                    for (int k = 0; k < lambda; k++) {
+                        for (int j = 0; j < DIM; j++) {
+                            z[k].append(rnd_.nextGaussian());
+                        }
+                    }
+                    
+                }
+                
 	}
 
 	private double[][] CMA_sample(int lambda, int mu, double m, double sigma,
