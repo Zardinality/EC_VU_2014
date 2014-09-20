@@ -8,131 +8,120 @@ import java.util.Comparator;
 import java.lang.Math;
 import org.apache.commons.math3.linear.*;
 
-public class player19 implements ContestSubmission
-{
+public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
 
-	public static final int RECOMB_MEAN = 0, RECOMB_DISCRETE = 1, RECOMB_RANDOM = 2;
-        
+	public static final int RECOMB_MEAN = 0, RECOMB_DISCRETE = 1,
+			RECOMB_RANDOM = 2;
+
 	Random rnd_;
 	ContestEvaluation evaluation_;
 	Integer population_;
 	Integer generation_;
-	Integer lambda_;//number# of offspring
+	Integer lambda_;// number# of offspring
 	int limit_;
-	double glr_;//global learning rate
-	double llr_;//local learning rate
-	double beta_;//turning angle
+	double glr_;// global learning rate
+	double llr_;// local learning rate
+	double beta_;// turning angle
 	int algIndex_;
-	double[] var_;//store the best
+	double[] var_;// store the best
 	boolean mm_, rg_, sp_;
-	
-	public player19()
-	{
+
+	public player19() {
 		rnd_ = new Random();
 		var_ = new double[10];
-		for(int i=0;i<10;i++) var_[i] = 1;
+		for (int i = 0; i < 10; i++)
+			var_[i] = 1;
 	}
-	
-	
+
 	@Override
-	public void setSeed(long seed)
-	{
+	public void setSeed(long seed) {
 		// Set seed of algortihms random process
 		rnd_.setSeed(seed);
 	}
-	
+
 	@Override
-	public void setEvaluation(ContestEvaluation evaluation)
-	{
+	public void setEvaluation(ContestEvaluation evaluation) {
 		// Set evaluation problem used in the run
 		evaluation_ = evaluation;
-		
+
 		// Get evaluation properties
 		Properties props = evaluation.getProperties();
 		// Property keys depend on specific evaluation
 		mm_ = Boolean.parseBoolean(props.getProperty("Multimodal"));
 		rg_ = Boolean.parseBoolean(props.getProperty("Regular"));
 		sp_ = Boolean.parseBoolean(props.getProperty("Separable"));
-		limit_ = (int)Double.parseDouble(props.getProperty("Evaluations"));
-		// Do sth with property values, e.g. specify relevant settings of your algorithm
-		population_ = (int)Math.round(Math.sqrt(limit_))/8;
-		generation_ = ((int)Math.floor(limit_)-population_)/(population_*6);
-		glr_ = 1/Math.sqrt(2 * limit_);
-		llr_ = 1/Math.sqrt(2 * Math.sqrt(limit_));
+		limit_ = (int) Double.parseDouble(props.getProperty("Evaluations"));
+		// Do sth with property values, e.g. specify relevant settings of your
+		// algorithm
+		population_ = (int) Math.round(Math.sqrt(limit_)) / 8;
+		generation_ = ((int) Math.floor(limit_) - population_)
+				/ (population_ * 6);
+		glr_ = 1 / Math.sqrt(2 * limit_);
+		llr_ = 1 / Math.sqrt(2 * Math.sqrt(limit_));
 		lambda_ = population_ * 6;
 		beta_ = 0.087266462599716;
 		algIndex_ = 0;
 
- 		
 	}
-	
+
 	@Override
-	public void run()
-	{
-                evolution(mm_, rg_, sp_);
+	public void run() {
+		evolution(mm_, rg_, sp_);
 	}
-	
-	private void evolution(boolean mm, boolean rg, boolean sp)
-	{
+
+	private void evolution(boolean mm, boolean rg, boolean sp) {
 		double[] g;
-		if (!mm) golden();
-		else if (rg) SSaDE();
-		else DE();
+		if (!mm)
+			golden();
+		else if (rg)
+			SSaDE();
+		else
+			DE();
 	}
-	
-	private double[][] sampling(int population)
-	{
-		int i,j,k;
-		double[][] g = new double[population][DIM]; 
-		for(i=0;i<population;i++)
-		{
-			for(j=0;j<DIM;j++)
-			{
-				g[i][j] = rnd_.nextDouble()*10-5;
+
+	private double[][] sampling(int population) {
+		int i, j, k;
+		double[][] g = new double[population][DIM];
+		for (i = 0; i < population; i++) {
+			for (j = 0; j < DIM; j++) {
+				g[i][j] = rnd_.nextDouble() * 10 - 5;
 			}
 		}
 		return g;
 	}
-	
-	private double[][] samplingES()
-	{
-		int i,j;
-		double[][] g = new double[population_][65]; 
-		
-		for(i=0;i<population_;i++)
-		{
-			for(j=0;j<10;j++)
-			{
-				g[i][j] = rnd_.nextDouble()*10-5;
+
+	private double[][] samplingES() {
+		int i, j;
+		double[][] g = new double[population_][65];
+
+		for (i = 0; i < population_; i++) {
+			for (j = 0; j < 10; j++) {
+				g[i][j] = rnd_.nextDouble() * 10 - 5;
 			}
-			for(j = 10; j < 20; j++)
-			{
+			for (j = 10; j < 20; j++) {
 				g[i][j] = 0.2;
 			}
-			for(j = 20; j < 65; j++)
-			{
+			for (j = 20; j < 65; j++) {
 				g[i][j] = 0;
 			}
 		}
-		
+
 		return g;
 	}
-	
-	private double[][] recombination(double[][] g, int length, int lambda, int population, int method)
-	{
+
+	private double[][] recombination(double[][] g, int length, int lambda,
+			int population, int method) {
 		int[] index = new int[2];
 		double[][] gnext = new double[lambda][length];
-		for (int i = 0; i < lambda; i++)
-		{
+		for (int i = 0; i < lambda; i++) {
 			index[0] = rnd_.nextInt(population);
 			index[1] = rnd_.nextInt(population);
 			double ratio = rnd_.nextDouble();
-			for (int j = 0; j < length; j++)
-			{
+			for (int j = 0; j < length; j++) {
 				switch (method) {
 				case RECOMB_MEAN:
-					gnext[i][j] = 0.5 * (g[index[0]][j]+g[index[1]][j]);
+					gnext[i][j] = 0.5 * (g[index[0]][j] + g[index[1]][j]);
 					break;
 				case RECOMB_DISCRETE:
 					if (rnd_.nextDouble() > 0.5)
@@ -141,17 +130,17 @@ public class player19 implements ContestSubmission
 						gnext[i][j] = g[index[1]][j];
 					break;
 				case RECOMB_RANDOM:
-					gnext[i][j] = ratio * g[index[0]][j] + (1 - ratio) * g[index[1]][j];
+					gnext[i][j] = ratio * g[index[0]][j] + (1 - ratio)
+							* g[index[1]][j];
 					break;
-				}      
+				}
 			}
 		}
 		return gnext;
 	}
-	
-	private double[][] mutation(double[][] gnext)
-	{
-		int i,j;
+
+	private double[][] mutation(double[][] gnext) {
+		int i, j;
 		double sum;
 		double r = 0.0;
 		double sigma = 0.01;
@@ -159,55 +148,30 @@ public class player19 implements ContestSubmission
 		double[][] L = new double[10][10];
 		double[][] gtemp = new double[lambda_][65];
 		double[] x = new double[10];
-		for(i = 0; i < lambda_; i++)
-		{
+		for (i = 0; i < lambda_; i++) {
 			r = glr_ * rnd_.nextGaussian();
-			for(j = 10; j < 20; j++)
-			{
+			for (j = 10; j < 20; j++) {
 				gtemp[i][j] = gnext[i][j] + r + llr_ * rnd_.nextGaussian();
 				gtemp[i][j] = Math.max(gtemp[i][j], sigma);
 			}/*
-			for(j = 20; j < 65; j++)
-			{
-				gtemp[i][j] = gnext[i][j] + beta_ * rnd_.nextGaussian();
-				if(gtemp[i][j] > Math.PI) gtemp[i][j] -= 2 * Math.PI;
-				else if(gtemp[i][j] < -Math.PI) gtemp[i][j] += 2 * Math.PI;
-			}
-			for(j = 0; j < 10; j++)
-			{
-				for(k = 0; k < 10; k++)
-				{
-					if(j > k)
-					{
-						cov[j][k] = -0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-k)*k/2+j-k]);
-					}
-					else if(j < k)
-					{
-						cov[j][k] = 0.5 * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-j)*j/2+k-j]);
-					}
-					else
-					{
-						cov[j][k] = gtemp[i][10+j] * gtemp[i][10+j];
-					}
-				}
-			}
-			L = Cholesky.cholesky(cov);
-			for(j = 0; j < 10; j++)
-			{
-				x[j] = rnd_.nextGaussian();
-			}
-			for(j = 0; j < 10; j++)
-			{
-				sum = 0;
-				for(k = 0; k < j+1; k++)
-				{
-					sum += L[j][k] * x[k];
-				}
-				gtemp[i][j] = gnext[i][j] + sum;
-			}*/
-			for(j = 0; j < 10; j++)
-			{
-				gtemp[i][j] = gnext[i][j] + gtemp[i][j+10] * rnd_.nextGaussian();
+			 * for(j = 20; j < 65; j++) { gtemp[i][j] = gnext[i][j] + beta_ *
+			 * rnd_.nextGaussian(); if(gtemp[i][j] > Math.PI) gtemp[i][j] -= 2 *
+			 * Math.PI; else if(gtemp[i][j] < -Math.PI) gtemp[i][j] += 2 *
+			 * Math.PI; } for(j = 0; j < 10; j++) { for(k = 0; k < 10; k++) {
+			 * if(j > k) { cov[j][k] = -0.5 * (gtemp[i][10+j] * gtemp[i][10+j] -
+			 * gtemp[i][10+k] * gtemp[i][10+k]) * Math.tan(2 *
+			 * gtemp[i][19+(19-k)*k/2+j-k]); } else if(j < k) { cov[j][k] = 0.5
+			 * * (gtemp[i][10+j] * gtemp[i][10+j] - gtemp[i][10+k] *
+			 * gtemp[i][10+k]) * Math.tan(2 * gtemp[i][19+(19-j)*j/2+k-j]); }
+			 * else { cov[j][k] = gtemp[i][10+j] * gtemp[i][10+j]; } } } L =
+			 * Cholesky.cholesky(cov); for(j = 0; j < 10; j++) { x[j] =
+			 * rnd_.nextGaussian(); } for(j = 0; j < 10; j++) { sum = 0; for(k =
+			 * 0; k < j+1; k++) { sum += L[j][k] * x[k]; } gtemp[i][j] =
+			 * gnext[i][j] + sum; }
+			 */
+			for (j = 0; j < 10; j++) {
+				gtemp[i][j] = gnext[i][j] + gtemp[i][j + 10]
+						* rnd_.nextGaussian();
 				gtemp[i][j] = Math.max(gtemp[i][j], -5);
 				gtemp[i][j] = Math.min(gtemp[i][j], 5);
 			}
@@ -215,39 +179,33 @@ public class player19 implements ContestSubmission
 		return gtemp;
 	}
 
-	private double[][] selection(double[][] gnext)
-	{
-		int i,j,k;
+	private double[][] selection(double[][] gnext) {
+		int i, j, k;
 		int index = 0;
 		double[][] g = new double[population_][65];
 		Double[] score = new Double[lambda_];
 		Double temp = 0.0;
-		
-		for(i = 0; i < lambda_; i++)
-		{
-			score[i] = (Double)evaluation_.evaluate(Arrays.copyOfRange(gnext[i], 0, 10));
+
+		for (i = 0; i < lambda_; i++) {
+			score[i] = (Double) evaluation_.evaluate(Arrays.copyOfRange(
+					gnext[i], 0, 10));
 		}
-		for(i = 0; i < population_; i++)
-		{
-			for(j = i + 1; j < lambda_; j++)
-			{
-				if(score[i]<score[j])
-				{
+		for (i = 0; i < population_; i++) {
+			for (j = i + 1; j < lambda_; j++) {
+				if (score[i] < score[j]) {
 					temp = score[j];
 					score[j] = score[i];
 					score[i] = temp;
 					index = j;
 				}
 			}
-			g[i] = (double[])gnext[index].clone();
+			g[i] = (double[]) gnext[index].clone();
 		}
 		return g;
 	}
 
-	
-	private double trial(int dim, int population)
-	{
-		int i,j,k;
+	private double trial(int dim, int population) {
+		int i, j, k;
 		double best = 0;
 		double bestscore = -999;
 		double result = 0.0;
@@ -259,357 +217,297 @@ public class player19 implements ContestSubmission
 		g[1][1] = gd_evaluate(dim, g[1][0]);
 		g[2][0] = 5;
 		g[2][1] = gd_evaluate(dim, g[2][0]);
-		for(i = 0; i < population-5; i++)
-		{
-			gnext = gd_recomb(g,dim);
+		for (i = 0; i < population - 5; i++) {
+			gnext = gd_recomb(g, dim);
 			g = gd_select(gnext);
 		}
-		gnext = gd_recomb(g,dim);
-		best = (gnext[1][0]+gnext[2][0])/2;
+		gnext = gd_recomb(g, dim);
+		best = (gnext[1][0] + gnext[2][0]) / 2;
 		var_[dim] = best;
-		//if (gnext[1][1]>gnext[2][1]) best = gnext[1][0];
-		//else best = gnext[2][0];
-		best = (gnext[0][0]+gnext[3][0])/2;
+		// if (gnext[1][1]>gnext[2][1]) best = gnext[1][0];
+		// else best = gnext[2][0];
+		best = (gnext[0][0] + gnext[3][0]) / 2;
 		return best;
 	}
-	
-	private double[][] gd_select(double[][] gnext)
-	{
+
+	private double[][] gd_select(double[][] gnext) {
 		double[][] g = new double[3][2];
-		if(gnext[1][1] < gnext[2][1])
-		{
+		if (gnext[1][1] < gnext[2][1]) {
 			g[0] = gnext[1].clone();
 			g[1] = gnext[2].clone();
 			g[2] = gnext[3].clone();
-		}
-		else
-		{
+		} else {
 			g[0] = gnext[0].clone();
 			g[1] = gnext[1].clone();
 			g[2] = gnext[2].clone();
 		}
 		return g;
 	}
-	
-	private double[][] gd_recomb(double[][] g, int dim)
-	{
+
+	private double[][] gd_recomb(double[][] g, int dim) {
 		double[][] gnext = new double[4][2];
 		gnext[0] = g[0].clone();
 		gnext[3] = g[2].clone();
-		double gnew = g[0][0]+g[2][0]-g[1][0];
-		if(gnew < g[1][0])
-		{
+		double gnew = g[0][0] + g[2][0] - g[1][0];
+		if (gnew < g[1][0]) {
 			gnext[2] = g[1].clone();
 			gnext[1][0] = gnew;
 			gnext[1][1] = gd_evaluate(dim, gnew);
-		}
-		else
-		{
+		} else {
 			gnext[1] = g[1].clone();
 			gnext[2][0] = gnew;
 			gnext[2][1] = gd_evaluate(dim, gnew);
 		}
 		return gnext;
 	}
-	
-	private double gd_evaluate(int dim, double g)
-	{
+
+	private double gd_evaluate(int dim, double g) {
 		double score = 0;
 		double[] var = var_;
-		//for(int i=1;i<10;i++) var[i] = -1;
+		// for(int i=1;i<10;i++) var[i] = -1;
 		var[dim] = g;
-		score = (Double)evaluation_.evaluate(var);
+		score = (Double) evaluation_.evaluate(var);
 		return score;
 	}
-	
-	private double trialRg(int dim, int population)
-	{
-		int i,j,k;
+
+	private double trialRg(int dim, int population) {
+		int i, j, k;
 		double best = 0;
 		double bestscore = -999;
 		double result = 0.0;
-		int pop = (int)Math.round(Math.sqrt((double)population));
+		int pop = (int) Math.round(Math.sqrt((double) population));
 		int gen = population / pop;
 		double[][] g = new double[pop][DIM];
 		double[][] gnext = new double[pop][DIM];
-		for(i = 0; i < pop; i++)
-		{
-			for(j = 0; j < DIM; j++)
-			{
+		for (i = 0; i < pop; i++) {
+			for (j = 0; j < DIM; j++) {
 				g[i][j] = 1;
 				gnext[i][j] = 1;
 			}
 			g[i][dim] = rnd_.nextDouble() * 10 - 5;
 		}
-		
-		double c = 0.95;//constant for mutation changing rate
+
+		double c = 0.95;// constant for mutation changing rate
 		double[] ps = new double[pop];//
 		double[] s = new double[pop];
 		double[] sigma = new double[pop];
 		Double[] score = new Double[pop];
-		for(i = 0; i < pop; i++)
-		{
+		for (i = 0; i < pop; i++) {
 			sigma[i] = 0.1;
-			score[i] = (Double)evaluation_.evaluate(g[i]);
+			score[i] = (Double) evaluation_.evaluate(g[i]);
 		}
-		
+
 		double rtemp = 0.0;
 		double tempb = 0.0;
-		
-		for(i = 0; i < gen - 1; i++)
-		{
-			for(j = 0; j < pop; j++)
-			{	
+
+		for (i = 0; i < gen - 1; i++) {
+			for (j = 0; j < pop; j++) {
 				gnext[j][dim] = g[j][dim] + sigma[j] * rnd_.nextGaussian();
-				
-				tempb = (Double)evaluation_.evaluate(gnext[j]);
-				if(score[j] >= tempb)
-				{
+
+				tempb = (Double) evaluation_.evaluate(gnext[j]);
+				if (score[j] >= tempb) {
 					s[j] = 0;
-				}
-				else
-				{
-					if(bestscore < tempb)
-					{
+				} else {
+					if (bestscore < tempb) {
 						bestscore = tempb;
 						best = gnext[j][dim];
 					}
-					//System.out.println("enter");
+					// System.out.println("enter");
 					s[j] = 1;
 					rtemp = gnext[j][dim];
 					g[j][dim] = rtemp;
 					score[j] = tempb;
 				}
 				ps[j] = ps[j] + s[j];
-				if(ps[j]/i > 0.205 && sigma[j] > 0.01)
-				{
+				if (ps[j] / i > 0.205 && sigma[j] > 0.01) {
 					sigma[j] = sigma[j] * c;
-				}
-				else if(ps[j]/i < 0.195 && sigma[j] < 2)
-				{
+				} else if (ps[j] / i < 0.195 && sigma[j] < 2) {
 					sigma[j] = sigma[j] / c;
 				}
 			}
 		}
 		return best;
 	}
-	
-	private void golden()
-	{
+
+	private void golden() {
 		double[] g = new double[DIM];
-		int pop = 400;//population_/2 - 1;
-		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
-		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
+		int pop = 400;// population_/2 - 1;
+		for (int i = 0; i < DIM; i++)
+			g[i] = trial(i, (pop) / DIM);
+		for (int i = 0; i < DIM; i++)
+			g[i] = trial(i, (pop) / DIM);
 		pop = 500;
-		for (int i = 0; i < DIM; i++) g[i] = trial(i, (pop) / DIM);
+		for (int i = 0; i < DIM; i++)
+			g[i] = trial(i, (pop) / DIM);
 		evaluation_.evaluate(g);
 	}
-        
-	private void ES()
-	{
+
+	private void ES() {
 		double[][] g = samplingES();
 		double[][] gnext = new double[lambda_][65];
-		for (int i = 0; i < generation_; i++)
-		{
+		for (int i = 0; i < generation_; i++) {
 			gnext = recombination(g, 65, lambda_, population_, RECOMB_MEAN);
 			gnext = mutation(gnext);
 			g = selection(gnext);
 		}
 	}
- 	
-	private void Rnd()
-	{
+
+	private void Rnd() {
 		double[][] g = sampling(population_);
-		for(int i = 0; i<population_;i++) evaluation_.evaluate(g[i]);
+		for (int i = 0; i < population_; i++)
+			evaluation_.evaluate(g[i]);
 	}
-	
-	private void CMA_ES()
-	{
+
+	private void CMA_ES() {
 		// set parameters (quite a lot...)
-		int lambda = 100;//lambda
-		int mu = lambda / 2;//mu
-		double mu2 = (double)lambda / 2;//mu'
-		double[] weight = new double[mu];//w
-		double[] weight2 = new double[mu];//w'
+		int lambda = 100;// lambda
+		int mu = lambda / 2;// mu
+		double mu2 = (double) lambda / 2;// mu'
+		double[] weight = new double[mu];// w
+		double[] weight2 = new double[mu];// w'
 		double sum = 0.0;
-		for (int i = 0; i < mu; i++){
+		for (int i = 0; i < mu; i++) {
 			weight2[i] = Math.log(mu2 + 0.5) - Math.log(i);
 			sum += weight2[i];
 		}
 		double sum2 = 0.0;
-		for (int i = 0; i < mu; i++){
+		for (int i = 0; i < mu; i++) {
 			weight[i] = weight2[i] / sum;
 			sum2 += Math.pow(weight[i], 2);
 		}
-		double mu_eff = 1/sum2;
+		double mu_eff = 1 / sum2;
 		double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
-		double d_sigma = 1 + 2 * Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1) + c_sigma;
+		double d_sigma = 1 + 2
+				* Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1)
+				+ c_sigma;
 		double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
 		double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
 		double alpha_mu = 2;
-		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1/mu_eff) / (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
-		double E_norm = Math.sqrt(DIM) * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM,2)));
-		
-		//initialization
-		double p_sigma = 0;
-		double p_c = 0;
+		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff)
+				/ (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
+		double E_norm = Math.sqrt(DIM)
+				* (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
+
+		// initialization
+		double[] p_sigma = new double[DIM];
+		double p_norm = 0;
+		double[] p_c = new double[DIM];
 		double h_sigma = 0;
 		double[][] g = sampling(population_);
-		RealMatrix B,C,D,BT;
-		EigenDecomposition c,d;
+		RealMatrix B, C, D, BT;
+		EigenDecomposition c, d;
+		double[] yw = new double[DIM];
 		double[] mean = new double[DIM];
 		double sigma = 3;
-		for (int i = 0; i < generation_; i++)
-		{
+		for (int i = 0; i < generation_; i++) {
 			g = CMA_sort(g);
-			mean = CMA_mean(g, weight, mu);
-			p_sigma = (1 - c_sigma) * p_sigma + Math.sqrt(c_sigma * (2 - c_sigma) *mu_eff);
-			
+			yw = CMA_mean(g, weight, mu);
+			for (int j = 0; j < DIM; j++) {
+				mean[j] += sigma * yw[j];
+				p_sigma[j] = (1 - c_sigma) * p_sigma[j]
+						+ Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff) * yw[j];
+			}
+			p_norm = 0;// TODO
+			sigma = sigma * Math.exp(c_sigma / d_sigma * (p_norm / E_norm - 1));
+			if (p_norm / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (i + 1))) < (1.4 + 2 / (DIM + 1))
+					* E_norm)
+				h_sigma = 1;
+
 		}
 	}
-	
-	private double[][] CMA_sample(int lambda, int mu, double m,double sigma,double[][] cov)
-	{
+
+	private double[][] CMA_sample(int lambda, int mu, double m, double sigma,
+			double[][] cov) {
 		double[][] g = new double[lambda][DIM];
-		RealMatrix B,C,D,BT;
-		EigenDecomposition c,d;
+		RealMatrix B, C, D, BT;
+		EigenDecomposition c, d;
 		C = new Array2DRowRealMatrix(cov);
 		c = new EigenDecomposition(C);
 		B = c.getV();
 		D = c.getD();
 		BT = c.getVT();
-		
-		
 		return g;
 	}
-	
-	private double[][] CMA_sort(double[][] g)
-	{
-		Arrays.sort(g, new Comparator<double[]>(){
+
+	private double[][] CMA_sort(double[][] g) {
+		Arrays.sort(g, new Comparator<double[]>() {
 			@Override
-			public int compare(double[] a, double[] b) {return Double.compare(b[0],a[0]);}
+			public int compare(double[] a, double[] b) {
+				return Double.compare(b[0], a[0]);
+			}
 		});
 		return g;
 	}
-	
-	private double[] CMA_mean(double[][] g, double[] weight, int mu)
-	{
+
+	private RealVector[] CMA_sort(RealVector[] g) {
+		Arrays.sort(g, new Comparator<RealVector>() {
+			@Override
+			public int compare(RealVector a, RealVector b) {
+				return Double.compare(a.getEntry(DIM), b.getEntry(DIM));
+			}
+		});
+		return g;
+	}
+
+	private double[] CMA_mean(double[][] g, double[] weight, int mu) {
 		double[] m = new double[DIM];
 		double[] sum = new double[DIM];
 		int l = g.length;
-		if(mu > l) throw new RuntimeException("mu > l");
-		
-		for(int i = 0; i < DIM; i++)
-		{
+		if (mu > l)
+			throw new RuntimeException("mu > l");
+
+		for (int i = 0; i < DIM; i++) {
 			sum[i] = 0;
-			for (int j = 0; j < mu; j++) sum[i] += weight[j] * g[i][j];
+			for (int j = 0; j < mu; j++)
+				sum[i] += weight[j] * g[i][j];
 			m[i] = sum[i] / l;
 		}
-		return m;		
+		return m;
 	}
-	
-	private void DE()
-	{
-		//set parameters
-		double CR = 0.9;//also try 0.9 and 1
-		double F = 0.9;//initial, can be further increased
+
+	// Differential Evolution
+	private void DE() {
+		// set parameters
+		double CR = 0.9;// also try 0.9 and 1
+		double F = 0.9;// initial, can be further increased
 		int population = 80;
 		int generation = limit_ / population - 1;
-		
-		//initialization
+
+		// initialization
 		double randr = 0.0;
 		int randi = 0;
-		int a,b,c;
+		int a, b, c;
 		double[][] g = sampling(population);
 		double[] score = new double[population];
-		for(int i = 0; i < population; i++) score[i] = (Double)evaluation_.evaluate(g[i]);
+		for (int i = 0; i < population; i++)
+			score[i] = (Double) evaluation_.evaluate(g[i]);
 		double[] y = new double[DIM];
 		double score_neo = 0;
-		for(int i = 0; i < generation; i++)
-		{
-			for(int j = 0; j < population; j++)
-			{
+		for (int i = 0; i < generation; i++) {
+			for (int j = 0; j < population; j++) {
 				score_neo = 0;
-				do {a = rnd_.nextInt(population);} while(a == j);
-				do {b = rnd_.nextInt(population);} while(b == j || b == a);
-				do {c = rnd_.nextInt(population);} while(c == j || c == a || c == b);
+				do {
+					a = rnd_.nextInt(population);
+				} while (a == j);
+				do {
+					b = rnd_.nextInt(population);
+				} while (b == j || b == a);
+				do {
+					c = rnd_.nextInt(population);
+				} while (c == j || c == a || c == b);
 				randi = rnd_.nextInt(DIM);
-				for(int k = 0; k < DIM; k++)
-				{
+				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
-					if(randi == k || randr < CR)
-					{
+					if (randi == k || randr < CR) {
 						y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
-						y[k] = Math.max(y[k],-5);
-						y[k] = Math.min(y[k],5);
-					}
-					else
-					{
+						y[k] = Math.max(y[k], -5);
+						y[k] = Math.min(y[k], 5);
+					} else {
 						y[k] = g[j][k];
 					}
 				}
-				score_neo = (Double)evaluation_.evaluate(y);
-				if(score_neo > score[j])
-				{
-					g[j] = y.clone();
-					score[j] = score_neo;
-				}
-			}
-		}
-		
-	}
-	
-	private void SaDE()
-	{
-		//set parameters
-		double CR = 0.5;//also try 0.9 and 1
-		double F = 0.5;//initial, can be further increased
-		double F_l = 0.1;
-		double F_u = 0.9;
-		
-		int population = 100;
-		int generation = limit_ / population - 1;
-		double tao_1 = 0.1;
-		double tao_2 = 0.1;
-		
-		//initialization
-		double randr = 0.0;
-		//double rand1,rand2,rand3,rand4;
-		int randi = 0;
-		int a,b,c;
-		double[][] g = sampling(population);
-		double[] score = new double[population];
-		for(int i = 0; i < population; i++) score[i] = (Double)evaluation_.evaluate(g[i]);
-		double[] y = new double[DIM];
-		double score_neo = 0;
-		for(int i = 0; i < generation; i++)
-		{
-			for(int j = 0; j < population; j++)
-			{
-				if(rnd_.nextDouble() < tao_1) F = F_l + rnd_.nextDouble() * F_u;
-				if(rnd_.nextDouble() < tao_2) CR = rnd_.nextDouble();
-				score_neo = 0;
-				do {a = rnd_.nextInt(population);} while(a == j);
-				do {b = rnd_.nextInt(population);} while(b == j || b == a);
-				do {c = rnd_.nextInt(population);} while(c == j || c == a || c == b);
-				randi = rnd_.nextInt(DIM);
-				for(int k = 0; k < DIM; k++)
-				{
-					randr = rnd_.nextDouble();
-					if(randi == k || randr < CR)
-					{
-						y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
-						y[k] = Math.max(y[k],-5);
-						y[k] = Math.min(y[k],5);
-					}
-					else
-					{
-						y[k] = g[j][k];
-					}
-				}
-				score_neo = (Double)evaluation_.evaluate(y);
-				if(score_neo > score[j])
-				{
+				score_neo = (Double) evaluation_.evaluate(y);
+				if (score_neo > score[j]) {
 					g[j] = y.clone();
 					score[j] = score_neo;
 				}
@@ -617,135 +515,197 @@ public class player19 implements ContestSubmission
 		}
 	}
 
-	private void SSaDE()
-	{
-		//set parameters
+	private void SaDE() {
+		// set parameters
+		double CR = 0.5;// also try 0.9 and 1
+		double F = 0.5;// initial, can be further increased
 		double F_l = 0.1;
 		double F_u = 0.9;
-		
+
+		int population = 100;
+		int generation = limit_ / population - 1;
+		double tao_1 = 0.1;
+		double tao_2 = 0.1;
+
+		// initialization
+		double randr = 0.0;
+		// double rand1,rand2,rand3,rand4;
+		int randi = 0;
+		int a, b, c;
+		double[][] g = sampling(population);
+		double[] score = new double[population];
+		for (int i = 0; i < population; i++)
+			score[i] = (Double) evaluation_.evaluate(g[i]);
+		double[] y = new double[DIM];
+		double score_neo = 0;
+		for (int i = 0; i < generation; i++) {
+			for (int j = 0; j < population; j++) {
+				if (rnd_.nextDouble() < tao_1)
+					F = F_l + rnd_.nextDouble() * F_u;
+				if (rnd_.nextDouble() < tao_2)
+					CR = rnd_.nextDouble();
+				score_neo = 0;
+				do {
+					a = rnd_.nextInt(population);
+				} while (a == j);
+				do {
+					b = rnd_.nextInt(population);
+				} while (b == j || b == a);
+				do {
+					c = rnd_.nextInt(population);
+				} while (c == j || c == a || c == b);
+				randi = rnd_.nextInt(DIM);
+				for (int k = 0; k < DIM; k++) {
+					randr = rnd_.nextDouble();
+					if (randi == k || randr < CR) {
+						y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
+						y[k] = Math.max(y[k], -5);
+						y[k] = Math.min(y[k], 5);
+					} else {
+						y[k] = g[j][k];
+					}
+				}
+				score_neo = (Double) evaluation_.evaluate(y);
+				if (score_neo > score[j]) {
+					g[j] = y.clone();
+					score[j] = score_neo;
+				}
+			}
+		}
+	}
+
+	private void SSaDE() {
+		// set parameters
+		double F_l = 0.1;
+		double F_u = 0.9;
+
 		int population = 100;
 		int generation = limit_ / population - 1;
 		double tao_1 = 0.2;
 		double tao_2 = 0.2;
-		
-		//initialization
+
+		// initialization
 		double[] CR = new double[population];
 		double[] F = new double[population];
-		double CR1,F1;
+		double CR1, F1;
 		double randr = 0.0;
 		double[] bestX = new double[DIM];
 		double best = 0.0;
 		int gen = 0;
-		
+
 		int randi = 0;
-		int a,b,c;
+		int a, b, c;
 		double[][] g = sampling(population);
 		double[] score = new double[population];
-		for(int i = 0; i < population; i++) 
-		{
-			score[i] = (Double)evaluation_.evaluate(g[i]);
+		for (int i = 0; i < population; i++) {
+			score[i] = (Double) evaluation_.evaluate(g[i]);
 			CR[i] = 0.6;
 			F[i] = 0.6;
-			if(score[i] > best)
-			{
+			if (score[i] > best) {
 				best = score[i];
 				bestX = g[i].clone();
 			}
 		}
 		double[] y = new double[DIM];
 		double score_neo = 0;
-		for(int i = 0; i < generation; i++)
-		{
-			for(int j = 0; j < population; j++)
-			{
-				if(rnd_.nextDouble() < tao_1) F1 = F_l + rnd_.nextDouble() * F_u;
-				else F1 = F[j];
-				
-				if(rnd_.nextDouble() < tao_2) CR1 = rnd_.nextDouble();
-				else CR1 = CR[j];
-				
+		for (int i = 0; i < generation; i++) {
+			for (int j = 0; j < population; j++) {
+				if (rnd_.nextDouble() < tao_1)
+					F1 = F_l + rnd_.nextDouble() * F_u;
+				else
+					F1 = F[j];
+
+				if (rnd_.nextDouble() < tao_2)
+					CR1 = rnd_.nextDouble();
+				else
+					CR1 = CR[j];
+
 				score_neo = 0;
-				do {a = rnd_.nextInt(population);} while(a == j);
-				do {b = rnd_.nextInt(population);} while(b == j || b == a);
-				do {c = rnd_.nextInt(population);} while(c == j || c == a || c == b);
+				do {
+					a = rnd_.nextInt(population);
+				} while (a == j);
+				do {
+					b = rnd_.nextInt(population);
+				} while (b == j || b == a);
+				do {
+					c = rnd_.nextInt(population);
+				} while (c == j || c == a || c == b);
 				randi = rnd_.nextInt(DIM);
-				for(int k = 0; k < DIM; k++)
-				{
+				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
-					if(randi == k || randr < CR1)
-					{
+					if (randi == k || randr < CR1) {
 						y[k] = g[a][k] + F1 * (g[b][k] - g[c][k]);
-						y[k] = Math.max(y[k],-5);
-						y[k] = Math.min(y[k],5);
-					}
-					else
-					{
+						y[k] = Math.max(y[k], -5);
+						y[k] = Math.min(y[k], 5);
+					} else {
 						y[k] = g[j][k];
 					}
 				}
-				score_neo = (Double)evaluation_.evaluate(y);
-				if(score_neo > score[j])
-				{
+				score_neo = (Double) evaluation_.evaluate(y);
+				if (score_neo > score[j]) {
 					g[j] = y.clone();
 					score[j] = score_neo;
 					F[j] = F1;
 					CR[j] = CR1;
-					if(score[j] > best)
-					{
+					if (score[j] > best) {
 						best = score[j];
 						bestX = g[j].clone();
 					}
 				}
 			}
 			gen++;
-			if(10 - best < 0.0001) break;
+			if (10 - best < 0.00001)
+				break;
 		}
-		//System.out.println(Integer.toString(gen));
-		for(int i = 0; i < population; i++)
-		{
-			for(int j = 0; j < DIM; j++)
-			{
-				g[i][j] = bestX[j] + 0.01 * rnd_.nextGaussian();
+		// System.out.println(Integer.toString(gen));
+
+		for (int i = 0; i < population; i++) {
+			for (int j = 0; j < DIM; j++) {
+				g[i][j] = bestX[j] + 0.1 * rnd_.nextGaussian();
 			}
 		}
-		for(int i = gen; i < generation; i++)
-		{
-			for(int j = 0; j < population; j++)
-			{
-				if(rnd_.nextDouble() < tao_1) F1 = F[j] + 0.1 *rnd_.nextGaussian();//F_l + rnd_.nextDouble() * F_u;
-				else F1 = F[j];
-				
-				if(rnd_.nextDouble() < tao_2) CR1 = CR[j] + 0.1 *rnd_.nextGaussian();//rnd_.nextDouble();
-				else CR1 = CR[j];
-				
+		for (int i = gen; i < generation; i++) {
+			for (int j = 0; j < population; j++) {
+				if (rnd_.nextDouble() < tao_1)
+					F1 = F[j] + 0.1 * rnd_.nextGaussian();
+				// F_l + rnd_.nextDouble() * F_u;
+				else
+					F1 = F[j];
+
+				if (rnd_.nextDouble() < tao_2)
+					CR1 = CR[j] + 0.1 * rnd_.nextGaussian();// rnd_.nextDouble();
+				else
+					CR1 = CR[j];
+
 				score_neo = 0;
-				do a = rnd_.nextInt(population); while(a == j);
-				do b = rnd_.nextInt(population); while(b == j || b == a);
-				do c = rnd_.nextInt(population); while(c == j || c == a || c == b);
+				do
+					a = rnd_.nextInt(population);
+				while (a == j);
+				do
+					b = rnd_.nextInt(population);
+				while (b == j || b == a);
+				do
+					c = rnd_.nextInt(population);
+				while (c == j || c == a || c == b);
 				randi = rnd_.nextInt(DIM);
-				for(int k = 0; k < DIM; k++)
-				{
+				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
-					if(randi == k || randr < CR1)
-					{
-						y[k] = g[a][k] + F1 * (bestX[k] - g[a][k]) + F1 * (g[b][k] - g[c][k]);
-						y[k] = Math.max(y[k],-5);
-						y[k] = Math.min(y[k],5);
-					}
-					else
-					{
+					if (randi == k || randr < CR1) {
+						y[k] = g[a][k] + F1 * (g[b][k] - g[c][k]);
+						// + F1 * (bestX[k] - g[a][k]);
+						y[k] = Math.max(y[k], -5);
+						y[k] = Math.min(y[k], 5);
+					} else {
 						y[k] = g[j][k];
 					}
 				}
-				score_neo = (Double)evaluation_.evaluate(y);
-				if(score_neo > score[j])
-				{
+				score_neo = (Double) evaluation_.evaluate(y);
+				if (score_neo > score[j]) {
 					g[j] = y.clone();
 					score[j] = score_neo;
 					F[j] = F1;
 					CR[j] = CR1;
-					if(score[j] > best)
-					{
+					if (score[j] > best) {
 						best = score[j];
 						bestX = g[j].clone();
 					}
