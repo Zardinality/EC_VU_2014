@@ -77,7 +77,7 @@ public class player19 implements ContestSubmission {
 		else if (rg)
 			SSaDE();
 		else
-			DE();
+			SaDE();
 	}
 
 	private double[][] sampling(int population) {
@@ -548,12 +548,15 @@ public class player19 implements ContestSubmission {
 				do {
 					a = rnd_.nextInt(population);
 				} while (a == j);
+				
 				do {
 					b = rnd_.nextInt(population);
 				} while (b == j || b == a);
+				
 				do {
 					c = rnd_.nextInt(population);
 				} while (c == j || c == a || c == b);
+				
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
@@ -581,8 +584,8 @@ public class player19 implements ContestSubmission {
 
 		int population = 100;
 		int generation = limit_ / population - 1;
-		double tao_1 = 0.2;
-		double tao_2 = 0.2;
+		double tao_1 = 0.1;
+		double tao_2 = 0.1;
 
 		// initialization
 		double[] CR = new double[population];
@@ -624,12 +627,15 @@ public class player19 implements ContestSubmission {
 				do {
 					a = rnd_.nextInt(population);
 				} while (a == j);
+				
 				do {
 					b = rnd_.nextInt(population);
 				} while (b == j || b == a);
+				
 				do {
 					c = rnd_.nextInt(population);
 				} while (c == j || c == a || c == b);
+				
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
@@ -654,11 +660,11 @@ public class player19 implements ContestSubmission {
 				}
 			}
 			gen++;
-			if (10 - best < 0.00001)
+			if (10 - best < 0.0001)
 				break;
 		}
-		// System.out.println(Integer.toString(gen));
-
+		//System.out.println(Integer.toString(gen));
+		
 		for (int i = 0; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
 				g[i][j] = bestX[j] + 0.1 * rnd_.nextGaussian();
@@ -667,8 +673,7 @@ public class player19 implements ContestSubmission {
 		for (int i = gen; i < generation; i++) {
 			for (int j = 0; j < population; j++) {
 				if (rnd_.nextDouble() < tao_1)
-					F1 = F[j] + 0.1 * rnd_.nextGaussian();
-				// F_l + rnd_.nextDouble() * F_u;
+					F1 = F_l + rnd_.nextDouble() * F_u;
 				else
 					F1 = F[j];
 
@@ -681,12 +686,15 @@ public class player19 implements ContestSubmission {
 				do
 					a = rnd_.nextInt(population);
 				while (a == j);
+
 				do
 					b = rnd_.nextInt(population);
 				while (b == j || b == a);
+
 				do
 					c = rnd_.nextInt(population);
 				while (c == j || c == a || c == b);
+
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
