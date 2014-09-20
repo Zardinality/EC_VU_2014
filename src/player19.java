@@ -7,10 +7,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.Math;
 import org.apache.commons.math3.linear.*;
-//import org.apache.commons.*;
-//import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-//import org.apache.commons.math3.linear.EigenDecomposition;
-//import org.apache.commons.math3.linear.RealMatrix;
 
 public class player19 implements ContestSubmission
 {
@@ -80,9 +76,9 @@ public class player19 implements ContestSubmission
 	private void evolution(boolean mm, boolean rg, boolean sp)
 	{
 		double[] g;
-		if (!mm) func1();
-		else if (rg) func8();
-		else func6();
+		if (!mm) golden();
+		else if (rg) SSaDE();
+		else DE();
 	}
 	
 	private double[][] sampling(int population)
@@ -398,7 +394,7 @@ public class player19 implements ContestSubmission
 		return best;
 	}
 	
-	private void func1()
+	private void golden()
 	{
 		double[] g = new double[DIM];
 		int pop = 400;//population_/2 - 1;
@@ -409,7 +405,7 @@ public class player19 implements ContestSubmission
 		evaluation_.evaluate(g);
 	}
         
-	private void func3()
+	private void ES()
 	{
 		double[][] g = samplingES();
 		double[][] gnext = new double[lambda_][65];
@@ -421,13 +417,13 @@ public class player19 implements ContestSubmission
 		}
 	}
  	
-	private void func4()
+	private void Rnd()
 	{
 		double[][] g = sampling(population_);
 		for(int i = 0; i<population_;i++) evaluation_.evaluate(g[i]);
 	}
 	
-	private void func5()
+	private void CMA_ES()
 	{
 		// set parameters (quite a lot...)
 		int lambda = 100;//lambda
@@ -459,20 +455,29 @@ public class player19 implements ContestSubmission
 		double p_c = 0;
 		double h_sigma = 0;
 		double[][] g = sampling(population_);
+		RealMatrix B,C,D,BT;
+		EigenDecomposition c,d;
 		double[] mean = new double[DIM];
 		double sigma = 3;
 		for (int i = 0; i < generation_; i++)
 		{
-			//g = CMA_sort(g);
-			//mean = CMA_mean(g, weight, mu);
-			
+			g = CMA_sort(g);
+			mean = CMA_mean(g, weight, mu);
+			p_sigma = (1 - c_sigma) * p_sigma + Math.sqrt(c_sigma * (2 - c_sigma) *mu_eff);
 			
 		}
 	}
 	
-	private double[][] CMA_sample(int lambda, int mu, double m,double sigma,double[][] C)
+	private double[][] CMA_sample(int lambda, int mu, double m,double sigma,double[][] cov)
 	{
 		double[][] g = new double[lambda][DIM];
+		RealMatrix B,C,D,BT;
+		EigenDecomposition c,d;
+		C = new Array2DRowRealMatrix(cov);
+		c = new EigenDecomposition(C);
+		B = c.getV();
+		D = c.getD();
+		BT = c.getVT();
 		
 		
 		return g;
@@ -503,7 +508,7 @@ public class player19 implements ContestSubmission
 		return m;		
 	}
 	
-	private void func6()
+	private void DE()
 	{
 		//set parameters
 		double CR = 0.9;//also try 0.9 and 1
@@ -554,7 +559,7 @@ public class player19 implements ContestSubmission
 		
 	}
 	
-	private void func7()
+	private void SaDE()
 	{
 		//set parameters
 		double CR = 0.5;//also try 0.9 and 1
@@ -612,7 +617,7 @@ public class player19 implements ContestSubmission
 		}
 	}
 
-	private void func8()
+	private void SSaDE()
 	{
 		//set parameters
 		double F_l = 0.1;
