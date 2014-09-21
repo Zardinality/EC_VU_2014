@@ -76,7 +76,7 @@ public class player19 implements ContestSubmission {
 		if (!mm)
 			golden();
 		else if (rg)
-			SSaDE();
+			DE();
 		else
 			DE();
 	}
@@ -161,30 +161,28 @@ public class player19 implements ContestSubmission {
 				else if (gtemp[i][j] < -Math.PI / 4)
 					gtemp[i][j] += Math.PI / 2;
 			}
-			for (int j = 0; j < 10; j++) {
-				for (int k = 0; k < 10; k++) {
+			for (int j = 0; j < DIM; j++) {
+				for (int k = 0; k < DIM; k++) {
 					if (j > k) {
-						cov[j][k] = -0.5
-								* (gtemp[i][10 + j] * gtemp[i][10 + j] - gtemp[i][10 + k]
-										* gtemp[i][10 + k])
-								* Math.tan(2 * gtemp[i][19 + (19 - k) * k / 2
+						cov[j][k] = Math.abs(Math.pow(gtemp[i][DIM + j], 2) - Math.pow(
+										gtemp[i][DIM + k], 2))
+								* (2 * gtemp[i][19 + (19 - k) * k / 2
 										+ j - k]);
 					} else if (j < k) {
-						cov[j][k] = 0.5
-								* (gtemp[i][10 + j] * gtemp[i][10 + j] - gtemp[i][10 + k]
-										* gtemp[i][10 + k])
-								* Math.tan(2 * gtemp[i][19 + (19 - j) * j / 2
+						cov[j][k] = Math.abs(Math.pow(gtemp[i][DIM + j], 2) - Math.pow(
+										gtemp[i][DIM + k], 2))
+								* (2 * gtemp[i][19 + (19 - j) * j / 2
 										+ k - j]);
 					} else {
-						cov[j][k] = gtemp[i][10 + j] * gtemp[i][10 + j];
+						cov[j][k] = Math.pow(gtemp[i][DIM + j],2);
 					}
 				}
 			}
 			L = cholesky(cov);
-			for (int j = 0; j < 10; j++) {
+			for (int j = 0; j < DIM; j++) {
 				x[j] = rnd_.nextGaussian();
 			}
-			for (int j = 0; j < 10; j++) {
+			for (int j = 0; j < DIM; j++) {
 				sum = 0;
 				for (int k = 0; k < j + 1; k++) {
 					sum += L[j][k] * x[k];
@@ -192,8 +190,8 @@ public class player19 implements ContestSubmission {
 				gtemp[i][j] = gnext[i][j] + sum;
 			}
 			/*
-			for (int j = 0; j < 10; j++) {
-				gtemp[i][j] = gnext[i][j] + gtemp[i][j + 10]
+			for (int j = 0; j < DIM; j++) {
+				gtemp[i][j] = gnext[i][j] + gtemp[i][j + DIM]
 						* rnd_.nextGaussian();
 				gtemp[i][j] = Math.max(gtemp[i][j], -5);
 				gtemp[i][j] = Math.min(gtemp[i][j], 5);
