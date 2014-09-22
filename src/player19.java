@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.Math;
 
-import org.apache.commons.math3.linear.*;
+//import org.apache.commons.math3.linear.*;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -178,7 +178,7 @@ public class player19 implements ContestSubmission {
 					}
 				}
 			}
-			L = cholesky(cov);
+//			L = cholesky(cov);
 			for (int j = 0; j < DIM; j++) {
 				x[j] = rnd_.nextGaussian();
 			}
@@ -200,12 +200,12 @@ public class player19 implements ContestSubmission {
 		return gtemp;
 	}
 
-	private double[][] cholesky(double[][] cov) {
-		RealMatrix C = new Array2DRowRealMatrix(cov);
-		CholeskyDecomposition cho = new CholeskyDecomposition(C);
-		RealMatrix L = cho.getL();
-		return L.getData();
-	}
+//	private double[][] cholesky(double[][] cov) {
+//		RealMatrix C = new Array2DRowRealMatrix(cov);
+//		CholeskyDecomposition cho = new CholeskyDecomposition(C);
+//		RealMatrix L = cho.getL();
+//		return L.getData();
+//	}
 	
 	private double[][] ES_selection(double[][] gnext) {
 		int i, j, k;
@@ -390,114 +390,114 @@ public class player19 implements ContestSubmission {
 			evaluation_.evaluate(g[i]);
 	}
 
-	private void CMA_ES() {
-		// set parameters (quite a lot...)
-		int lambda = 100;// lambda
-		int mu = lambda / 2;// mu
-		double mu2 = (double) lambda / 2;// mu'
-		double[] weight = new double[mu];// w
-		double[] weight2 = new double[mu];// w'
-		double sum = 0.0;
-		for (int i = 0; i < mu; i++) {
-			weight2[i] = Math.log(mu2 + 0.5) - Math.log(i);
-			sum += weight2[i];
-		}
-		double sum2 = 0.0;
-		for (int i = 0; i < mu; i++) {
-			weight[i] = weight2[i] / sum;
-			sum2 += Math.pow(weight[i], 2);
-		}
-		double mu_eff = 1 / sum2;
-		double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
-		double d_sigma = 1 + 2
-				* Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1)
-				+ c_sigma;
-		double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
-		double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
-		double alpha_mu = 2;
-		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff)
-				/ (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
-		double E_norm = Math.sqrt(DIM)
-				* (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
-
-		// initialization
-		double[] p_sigma = new double[DIM];
-		double p_norm = 0;
-		double[] p_c = new double[DIM];
-		double h_sigma = 0;
-		double[][] g = sampling(population_);
-		RealMatrix B, C, D, BT;
-		EigenDecomposition c, d;
-		double[] yw = new double[DIM];
-		double[] mean = new double[DIM];
-		double sigma = 3;
-		
-		
-		for (int i = 0; i < generation_; i++) {
-			g = CMA_sort(g);
-			yw = CMA_mean(g, weight, mu);
-			for (int j = 0; j < DIM; j++) {
-				mean[j] += sigma * yw[j];
-				p_sigma[j] = (1 - c_sigma) * p_sigma[j]
-						+ Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff) * yw[j];
-			}
-			p_norm = 0;// TODO
-			sigma = sigma * Math.exp(c_sigma / d_sigma * (p_norm / E_norm - 1));
-			if (p_norm / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (i + 1))) < (1.4 + 2 / (DIM + 1))
-					* E_norm)
-				h_sigma = 1;
-
-		}
-	}
-
-	private double[][] CMA_sample(int lambda, int mu, double m, double sigma,
-			double[][] cov) {
-		double[][] g = new double[lambda][DIM];
-		RealMatrix B, C, D, BT;
-		EigenDecomposition c, d;
-		C = new Array2DRowRealMatrix(cov);
-		c = new EigenDecomposition(C);
-		B = c.getV();
-		D = c.getD();
-		BT = c.getVT();
-		return g;
-	}
-
-	private double[][] CMA_sort(double[][] g) {
-		Arrays.sort(g, new Comparator<double[]>() {
-			@Override
-			public int compare(double[] a, double[] b) {
-				return Double.compare(b[0], a[0]);
-			}
-		});
-		return g;
-	}
-
-	private RealVector[] CMA_sort(RealVector[] g) {
-		Arrays.sort(g, new Comparator<RealVector>() {
-			@Override
-			public int compare(RealVector a, RealVector b) {
-				return Double.compare(a.getEntry(DIM), b.getEntry(DIM));
-			}
-		});
-		return g;
-	}
-
-	private double[] CMA_mean(double[][] g, double[] weight, int mu) {
-		double[] m = new double[DIM];
-		double[] sum = new double[DIM];
-		int l = g.length;
-		if (mu > l)
-			throw new RuntimeException("mu > l");
-
-		for (int i = 0; i < DIM; i++) {
-			sum[i] = 0;
-			for (int j = 0; j < mu; j++)
-				sum[i] += weight[j] * g[i][j];
-			m[i] = sum[i] / l;
-		}
-		return m;
-	}
+//	private void CMA_ES() {
+//		// set parameters (quite a lot...)
+//		int lambda = 100;// lambda
+//		int mu = lambda / 2;// mu
+//		double mu2 = (double) lambda / 2;// mu'
+//		double[] weight = new double[mu];// w
+//		double[] weight2 = new double[mu];// w'
+//		double sum = 0.0;
+//		for (int i = 0; i < mu; i++) {
+//			weight2[i] = Math.log(mu2 + 0.5) - Math.log(i);
+//			sum += weight2[i];
+//		}
+//		double sum2 = 0.0;
+//		for (int i = 0; i < mu; i++) {
+//			weight[i] = weight2[i] / sum;
+//			sum2 += Math.pow(weight[i], 2);
+//		}
+//		double mu_eff = 1 / sum2;
+//		double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
+//		double d_sigma = 1 + 2
+//				* Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1)
+//				+ c_sigma;
+//		double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
+//		double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
+//		double alpha_mu = 2;
+//		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff)
+//				/ (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
+//		double E_norm = Math.sqrt(DIM)
+//				* (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
+//
+//		// initialization
+//		double[] p_sigma = new double[DIM];
+//		double p_norm = 0;
+//		double[] p_c = new double[DIM];
+//		double h_sigma = 0;
+//		double[][] g = sampling(population_);
+//		RealMatrix B, C, D, BT;
+//		EigenDecomposition c, d;
+//		double[] yw = new double[DIM];
+//		double[] mean = new double[DIM];
+//		double sigma = 3;
+//		
+//		
+//		for (int i = 0; i < generation_; i++) {
+//			g = CMA_sort(g);
+//			yw = CMA_mean(g, weight, mu);
+//			for (int j = 0; j < DIM; j++) {
+//				mean[j] += sigma * yw[j];
+//				p_sigma[j] = (1 - c_sigma) * p_sigma[j]
+//						+ Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff) * yw[j];
+//			}
+//			p_norm = 0;// TODO
+//			sigma = sigma * Math.exp(c_sigma / d_sigma * (p_norm / E_norm - 1));
+//			if (p_norm / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (i + 1))) < (1.4 + 2 / (DIM + 1))
+//					* E_norm)
+//				h_sigma = 1;
+//
+//		}
+//	}
+//
+//	private double[][] CMA_sample(int lambda, int mu, double m, double sigma,
+//			double[][] cov) {
+//		double[][] g = new double[lambda][DIM];
+//		RealMatrix B, C, D, BT;
+//		EigenDecomposition c, d;
+//		C = new Array2DRowRealMatrix(cov);
+//		c = new EigenDecomposition(C);
+//		B = c.getV();
+//		D = c.getD();
+//		BT = c.getVT();
+//		return g;
+//	}
+//
+//	private double[][] CMA_sort(double[][] g) {
+//		Arrays.sort(g, new Comparator<double[]>() {
+//			@Override
+//			public int compare(double[] a, double[] b) {
+//				return Double.compare(b[0], a[0]);
+//			}
+//		});
+//		return g;
+//	}
+//
+//	private RealVector[] CMA_sort(RealVector[] g) {
+//		Arrays.sort(g, new Comparator<RealVector>() {
+//			@Override
+//			public int compare(RealVector a, RealVector b) {
+//				return Double.compare(a.getEntry(DIM), b.getEntry(DIM));
+//			}
+//		});
+//		return g;
+//	}
+//
+//	private double[] CMA_mean(double[][] g, double[] weight, int mu) {
+//		double[] m = new double[DIM];
+//		double[] sum = new double[DIM];
+//		int l = g.length;
+//		if (mu > l)
+//			throw new RuntimeException("mu > l");
+//
+//		for (int i = 0; i < DIM; i++) {
+//			sum[i] = 0;
+//			for (int j = 0; j < mu; j++)
+//				sum[i] += weight[j] * g[i][j];
+//			m[i] = sum[i] / l;
+//		}
+//		return m;
+//	}
 
 	// Differential Evolution
 	private void DE() {
