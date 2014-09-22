@@ -76,7 +76,7 @@ public class player19 implements ContestSubmission {
 		if (!mm)
 			golden();
 		else if (rg)
-			DE();
+			SSaDE();
 		else
 			DE();
 	}
@@ -502,8 +502,8 @@ public class player19 implements ContestSubmission {
 	// Differential Evolution
 	private void DE() {
 		// set parameters
-		double CR = 0.9;// also try 0.9 and 1
-		double F = 0.9;// initial, can be further increased
+		double CR = 0.5;// also try 0.9 and 1
+		double F = 0.5;// initial, can be further increased
 		int population = 500;
 		int generation = limit_ / population - 1;
 
@@ -755,4 +755,113 @@ public class player19 implements ContestSubmission {
 			}
 		}
 	}
+	
+	//Matrix operator
+	
+	// return C = A * B
+    private double[][] multiply(double[][] A, double[][] B) {
+        int mA = A.length;
+        int nA = A[0].length;
+        int mB = B.length;
+        int nB = A[0].length;
+        if (nA != mB) throw new RuntimeException("Illegal matrix dimensions.");
+        double[][] C = new double[mA][nB];
+        for (int i = 0; i < mA; i++)
+            for (int j = 0; j < nB; j++)
+                for (int k = 0; k < nA; k++)
+                    C[i][j] += (A[i][k] * B[k][j]);
+        return C;
+    }
+
+    // matrix-vector multiplication (y = A * x)
+    private double[] multiply(double[][] A, double[] x) {
+        int m = A.length;
+        int n = A[0].length;
+        if (x.length != n) throw new RuntimeException("Illegal matrix dimensions.");
+        double[] y = new double[m];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                y[i] += (A[i][j] * x[j]);
+        return y;
+    }
+
+    // vector-matrix multiplication (y = x^T A)
+    private double[] multiply(double[] x, double[][] A) {
+        int m = A.length;
+        int n = A[0].length;
+        if (x.length != m) throw new RuntimeException("Illegal matrix dimensions.");
+        double[] y = new double[n];
+        for (int j = 0; j < n; j++)
+            for (int i = 0; i < m; i++)
+                y[j] += (A[i][j] * x[i]);
+        return y;
+    }
+	
+    // return a random m-by-n matrix with values between 0 and 1
+    private double[][] random(int m, int n) {
+        double[][] C = new double[m][n];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                C[i][j] = rnd_.nextDouble();
+        return C;
+    }
+    
+    // return a random m-by-n matrix with values between 0 and 1
+    private double[][] random(int m, int n, double sigma) {
+        double[][] C = new double[m][n];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                C[i][j] = rnd_.nextGaussian() * sigma;
+        return C;
+    }
+
+    // return n-by-n identity matrix I
+    private double[][] identity(int n) {
+        double[][] I = new double[n][n];
+        for (int i = 0; i < n; i++)
+            I[i][i] = 1;
+        return I;
+    }
+
+    // return x^T y
+    private double dot(double[] x, double[] y) {
+        if (x.length != y.length) throw new RuntimeException("Illegal vector dimensions.");
+        double sum = 0.0;
+        for (int i = 0; i < x.length; i++)
+            sum += x[i] * y[i];
+        return sum;
+    }
+
+    // return C = A^T
+    private double[][] transpose(double[][] A) {
+        int m = A.length;
+        int n = A[0].length;
+        double[][] C = new double[n][m];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                C[j][i] = A[i][j];
+        return C;
+    }
+
+    // return C = A + B
+    private double[][] add(double[][] A, double[][] B) {
+        int m = A.length;
+        int n = A[0].length;
+        double[][] C = new double[m][n];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                C[i][j] = A[i][j] + B[i][j];
+        return C;
+    }
+
+    // return C = A - B
+    private double[][] subtract(double[][] A, double[][] B) {
+        int m = A.length;
+        int n = A[0].length;
+        double[][] C = new double[m][n];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                C[i][j] = A[i][j] - B[i][j];
+        return C;
+    }
 }
