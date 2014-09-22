@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.Math;
 
-//import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.*;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -162,23 +162,22 @@ public class player19 implements ContestSubmission {
 					gtemp[i][j] += Math.PI / 2;
 			}
 			for (int j = 0; j < DIM; j++) {
-				for (int k = 0; k < DIM; k++) {
-					if (j > k) {
-						cov[j][k] = Math.abs(Math.pow(gtemp[i][DIM + j], 2) - Math.pow(
-										gtemp[i][DIM + k], 2))
-								* (2 * gtemp[i][19 + (19 - k) * k / 2
-										+ j - k]);
-					} else if (j < k) {
-						cov[j][k] = Math.abs(Math.pow(gtemp[i][DIM + j], 2) - Math.pow(
-										gtemp[i][DIM + k], 2))
-								* (2 * gtemp[i][19 + (19 - j) * j / 2
+				for (int k = j; k < DIM; k++) {
+					if (j != k) {
+						cov[j][k] = Math.abs(Math.pow(gtemp[i][DIM + j], 2)
+								- Math.pow(gtemp[i][DIM + k], 2))
+								* Math.sin(2 * gtemp[i][19 + (19 - j) * j / 2
+										+ k - j]);
+						cov[k][j] = Math.abs(Math.pow(gtemp[i][DIM + j], 2)
+								- Math.pow(gtemp[i][DIM + k], 2))
+								* Math.sin(2 * gtemp[i][19 + (19 - j) * j / 2
 										+ k - j]);
 					} else {
-						cov[j][k] = Math.pow(gtemp[i][DIM + j],2);
+						cov[j][k] = Math.pow(gtemp[i][DIM + j], 2);
 					}
 				}
 			}
-//			L = cholesky(cov);
+			L = cholesky(cov);
 			for (int j = 0; j < DIM; j++) {
 				x[j] = rnd_.nextGaussian();
 			}
@@ -189,23 +188,16 @@ public class player19 implements ContestSubmission {
 				}
 				gtemp[i][j] = gnext[i][j] + sum;
 			}
-			/*
-			for (int j = 0; j < DIM; j++) {
-				gtemp[i][j] = gnext[i][j] + gtemp[i][j + DIM]
-						* rnd_.nextGaussian();
-				gtemp[i][j] = Math.max(gtemp[i][j], -5);
-				gtemp[i][j] = Math.min(gtemp[i][j], 5);
-			}*/
 		}
 		return gtemp;
 	}
 
-//	private double[][] cholesky(double[][] cov) {
-//		RealMatrix C = new Array2DRowRealMatrix(cov);
-//		CholeskyDecomposition cho = new CholeskyDecomposition(C);
-//		RealMatrix L = cho.getL();
-//		return L.getData();
-//	}
+	private double[][] cholesky(double[][] cov) {
+		RealMatrix C = new Array2DRowRealMatrix(cov);
+		CholeskyDecomposition cho = new CholeskyDecomposition(C);
+		RealMatrix L = cho.getL();
+		return L.getData();
+	}
 	
 	private double[][] ES_selection(double[][] gnext) {
 		int i, j, k;
@@ -502,8 +494,8 @@ public class player19 implements ContestSubmission {
 	// Differential Evolution
 	private void DE() {
 		// set parameters
-		double CR = 0.5;// also try 0.9 and 1
-		double F = 0.5;// initial, can be further increased
+		double CR = 0.6;// also try 0.9 and 1
+		double F = 0.6;// initial, can be further increased
 		int population = 500;
 		int generation = limit_ / population - 1;
 
