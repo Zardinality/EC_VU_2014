@@ -656,7 +656,7 @@ public class player19 implements ContestSubmission {
 		double F_l = 0.1;
 		double F_u = 0.9;
 
-		int population = 100;
+		int population = 120;
 		int generation = limit_ / population - 1;
 		double tao_1 = 0.1;
 		double tao_2 = 0.1;
