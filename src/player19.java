@@ -75,11 +75,11 @@ public class player19 implements ContestSubmission {
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
 		if (!mm)
-			SaPSO();
+			golden();
 		else if (rg)
-			SaPSO();
+			SSaDE();
 		else
-			SaPSO();
+			SaDE();
 	}
 
 	private double[][] sampling(int population) {
