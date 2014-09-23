@@ -24,10 +24,10 @@ public class FletcherEvaluation implements ContestEvaluation{
 	
 	public FletcherEvaluation()
 	{
-		best_ = -100;
+		best_ = -10000;
 		evaluations_ = 0;
 		rnd_ = new Random();
-		rnd_.setSeed(0);
+		rnd_.setSeed(2);
 		alpha_ = new double[10];
 		a_ = new int[10][10];
 		b_ = new int[10][10];
