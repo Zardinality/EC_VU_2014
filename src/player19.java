@@ -459,14 +459,13 @@ public class player19 implements ContestSubmission {
 //		double p_norm = 0;
 //		double[] p_c = new double[DIM];
 //		double h_sigma = 0;
-//		double[][] g = sampling(population_);
-//		RealMatrix B, C, D, BT;
-//		EigenDecomposition c, d;
-//		double[] yw = new double[DIM];
-//		double[] mean = new double[DIM];
+//		//double[][] g = sampling(population_);
+//		RealMatrix C = MatrixUtils.createRealIdentityMatrix(DIM);
+//                RealVector mean = new ArrayRealVector(DIM);
 //		double sigma = 3;
-//		
-//		
+//                
+//                // evolution
+//
 //		for (int i = 0; i < generation_; i++) {
 //			g = CMA_sort(g);
 //			yw = CMA_mean(g, weight, mu);
@@ -482,6 +481,34 @@ public class player19 implements ContestSubmission {
 //				h_sigma = 1;
 //
 //		}
+//                
+//                RealVector[] x = new ArrayRealVector[lambda];
+//                RealVector[] y = new ArrayRealVector[lambda];
+//                RealVector[] z = new ArrayRealVector[lambda];
+//                for (int i = 0; i < generation_; i++) {
+//                    // Compute z_k
+//                    for (int k = 0; k < lambda; k++) {
+//                        for (int j = 0; j < DIM; j++) {
+//                            z[k].append(rnd_.nextGaussian());
+//                        }
+//                    }
+//                    
+//                    // Decomposite C
+//                    EigenDecomposition decomp = new EigenDecomposition(C);
+//                    RealMatrix B = decomp.getV();
+//                    RealMatrix D = decomp.getD();
+//                    for (int j = 0; j < DIM; j++) {
+//                        D.setEntry(j, j, Math.sqrt(D.getEntry(j, j)));
+//                    }
+//                    
+//                    // Compute y_k and x_k
+//                    for (int k = 0; k < lambda; k++) {
+//                        y[k] = B.multiply(D).operate(x[k]);
+//                        x[k] = y[k].mapMultiply(sigma).add(mean);
+//                    }
+//                    
+//                }
+//                
 //	}
 //
 //	private double[][] CMA_sample(int lambda, int mu, double m, double sigma,
