@@ -26,7 +26,7 @@ public class player19 implements ContestSubmission {
 	int algIndex_;
 	double[] var_;// store the best
 	boolean mm_, rg_, sp_;
-        Matrix64F M;
+    Matrix64F M;
 
 	public player19() {
 		rnd_ = new Random();

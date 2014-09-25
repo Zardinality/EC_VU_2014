@@ -1,3 +1,2 @@
-javac -cp contest.jar player19.java
-jar cmf MainClass.txt submission.jar player19.class
-
+javac -cp contest.jar;EJML-core-0.26.jar;EJML-equation-0.26.jar;EJML-experimental-0.26.jar player19.java
+jar cmf manifest.mf submission.jar player19.class
