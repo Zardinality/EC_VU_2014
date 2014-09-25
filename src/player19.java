@@ -4,10 +4,9 @@ import org.vu.contest.ContestEvaluation;
 import java.util.Random;
 import java.util.Properties;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.lang.Math;
 
-import org.apache.commons.math3.linear.*;
+import org.ejml.data.Matrix64F;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -27,6 +26,7 @@ public class player19 implements ContestSubmission {
 	int algIndex_;
 	double[] var_;// store the best
 	boolean mm_, rg_, sp_;
+        Matrix64F M;
 
 	public player19() {
 		rnd_ = new Random();
@@ -619,7 +619,6 @@ public class player19 implements ContestSubmission {
 		double F = 0.4;// initial, can be further increased
 		double F_l = 0.1;
 		double F_u = 0.9;
-		RealMatrix A;
 		
 		
 		int population = 200;
