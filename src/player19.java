@@ -4,11 +4,8 @@ import org.vu.contest.ContestEvaluation;
 import java.util.Random;
 import java.util.Properties;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.lang.Math;
 
-
-import org.ejml.*;
 import org.ejml.data.Matrix64F;
 
 public class player19 implements ContestSubmission {
@@ -40,7 +37,7 @@ public class player19 implements ContestSubmission {
 
 	@Override
 	public void setSeed(long seed) {
-		// Set seed of algortihms random process
+		// Set seed of algorithms random process
 		rnd_.setSeed(seed);
 	}
 
@@ -56,7 +53,7 @@ public class player19 implements ContestSubmission {
 		rg_ = Boolean.parseBoolean(props.getProperty("Regular"));
 		sp_ = Boolean.parseBoolean(props.getProperty("Separable"));
 		limit_ = (int) Double.parseDouble(props.getProperty("Evaluations"));
-		// Do sth with property values, e.g. specify relevant settings of your
+		// Do something with property values, e.g. specify relevant settings of your
 		// algorithm
 		population_ = (int) Math.round(Math.sqrt(limit_)) / 8;
 		generation_ = ((int) Math.floor(limit_) - population_)
@@ -622,7 +619,8 @@ public class player19 implements ContestSubmission {
 		double F = 0.4;// initial, can be further increased
 		double F_l = 0.1;
 		double F_u = 0.9;
-
+		
+		
 		int population = 200;
 		int generation = limit_ / population - 1;
 		double tao_1 = 0.1;
@@ -1073,4 +1071,5 @@ public class player19 implements ContestSubmission {
                 C[i][j] = A[i][j] - B[i][j];
         return C;
     }
+    
 }
