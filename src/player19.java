@@ -1072,4 +1072,6 @@ public class player19 implements ContestSubmission {
         return C;
     }
     
+    
+    public static void main(String[] args) {}
 }
