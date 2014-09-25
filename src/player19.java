@@ -8,7 +8,8 @@ import java.util.Comparator;
 import java.lang.Math;
 
 
-//import org.apache.commons.math3.linear.*;
+import org.ejml.*;
+import org.ejml.data.Matrix64F;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -28,6 +29,7 @@ public class player19 implements ContestSubmission {
 	int algIndex_;
 	double[] var_;// store the best
 	boolean mm_, rg_, sp_;
+        Matrix64F M;
 
 	public player19() {
 		rnd_ = new Random();
@@ -616,8 +618,8 @@ public class player19 implements ContestSubmission {
 
 	private void SaDE() {
 		// set parameters
-		double CR = 0.5;// also try 0.9 and 1
-		double F = 0.5;// initial, can be further increased
+		double CR = 0.4;// also try 0.9 and 1
+		double F = 0.4;// initial, can be further increased
 		double F_l = 0.1;
 		double F_u = 0.9;
 
