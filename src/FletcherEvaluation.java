@@ -77,7 +77,7 @@ public class FletcherEvaluation implements ContestEvaluation {
 
 		double f = 0;
 		f = 10 - Math.log(func(ind, alpha_, a_, b_) + 1);
-		// f = Math.exp(-func(ind, alpha_, a_, b_) + 1) * 10;
+		//f = Math.exp(-func(ind, alpha_, a_, b_) + 1) * 10;
 		if (f > best_)
 			best_ = f;
 		evaluations_++;

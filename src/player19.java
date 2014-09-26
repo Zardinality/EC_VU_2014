@@ -75,11 +75,11 @@ public class player19 implements ContestSubmission {
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
 		if (!mm)
-			golden();
+			NSaDE();
 		else if (rg)
-			SaDE();
+			NSaDE();
 		else
-			SaDE();
+			NSaDE();
 	}
 
 	
@@ -732,8 +732,10 @@ public class player19 implements ContestSubmission {
 		double CRm = 0.5;
 		double CRd = 0.1;
 		double F = 0.5;
+		double K= 0.5;
 		double Fm = 0.5;// initial, can be further increased
 		double Fd = 0.2;// deviation
+		double sigma = 0.01;//
 
 		int population = 100;
 		int generation = limit_ / population - 1;
@@ -746,8 +748,10 @@ public class player19 implements ContestSubmission {
 		double[] bestX = new double[DIM];
 		double best = -100.0;
 		int gen = 0;
-		int ns_1 = 1, ns_2 = 1, nf_1 = 1, nf_2 = 1;// strategy selection counter
-		double p_1 = 0.5, p_2 = 0.5;// strategy selection probability
+		int ns_1 = 1, ns_2 = 1,ns_3 = 1, ns_4 = 1;// strategy selection counter
+		int nf_1 = 1, nf_2 = 1,nf_3 = 1, nf_4 = 1;// strategy selection counter
+		double p_1 = 0.25, p_2 = 0.25, p_3 = 0.25, p_4 = 0.25;// strategy selection probability
+		double s_1,s_2,s_3,s_4,s_sum;
 		int randi = 0;
 		int r1,r2,r3,r4,r5;// random index
 		int st = 1;// current strategy
@@ -781,14 +785,29 @@ public class player19 implements ContestSubmission {
 					CR[j] = Math.max(0.1, CR[j]);
 				}
 			}
+			
+			//update strategies probability
 			if (i % lp == 0) {
-				p_1 = 1.2 * ns_1 * (ns_2 + nf_2)
-						/ (ns_1 * (ns_2 + nf_2) + ns_2 * (ns_1 + nf_1));
-				p_2 = 1 - p_1;
+				s_1 = ns_1 / (ns_1 + nf_1) + sigma;
+				s_2 = ns_2 / (ns_2 + nf_2) + sigma;
+				s_3 = ns_3 / (ns_3 + nf_3) + sigma;
+				s_4 = ns_4 / (ns_4 + nf_4) + sigma;
+				s_sum = s_1+s_2+s_3+s_4;
+				
+				p_1 = s_1/s_sum;
+				p_2 = s_2/s_sum;
+				p_3 = s_3/s_sum;
+				p_4 = s_4/s_sum;
+				
 				ns_1 = 0;
 				ns_2 = 0;
+				ns_3 = 0;
+				ns_4 = 0;
+				
 				nf_1 = 0;
 				nf_2 = 0;
+				nf_3 = 0;
+				nf_4 = 0;
 			}
 
 			for (int j = 0; j < population; j++) {
@@ -814,24 +833,40 @@ public class player19 implements ContestSubmission {
 				do {
 					r5 = rnd_.nextInt(population);
 				} while (r5 == j || r5 == r1 || r5 == r2 || r5 == r3 || r5 == r4);
-
+				
+				if (rnd_.nextDouble() <= p_1) {
+					st = 1;
+				} else if (rnd_.nextDouble() <= p_1 + p_2) {
+					st = 2;
+				} else if (rnd_.nextDouble() <= p_1 + p_2 + p_3) {
+					st = 3;
+				} else {
+					st = 4;
+				}
+				
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
-					randr = rnd_.nextDouble();
-					if (randi == k || randr < CR[j]) {
-						if (rnd_.nextDouble() <= p_1) {
-							st = 1;
-							y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]);
+					if (st == 4) {
+						randr = rnd_.nextDouble();
+						if (randi == k || randr < CR[j]) {
+							if (st == 1) {
+								y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]);
+							} else if (st == 2) {
+								y[k] = g[j][k] + F * (bestX[k] - g[j][k]) + F
+										* (g[r1][k] - g[r2][k]) + F
+										* (g[r3][k] - g[r4][k]);
+							} else {
+								y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]) + F
+										* (g[r4][k] - g[r5][k]);
+							}
+							y[k] = Math.max(y[k], -5);
+							y[k] = Math.min(y[k], 5);
 						} else {
-							st = 2;
-							y[k] = g[j][k] + F * (bestX[k] - g[j][k]) + F
-									* (g[r1][k] - g[r2][k]) + F
-									* (g[r3][k] - g[r4][k]);
+							y[k] = g[j][k];
 						}
-						y[k] = Math.max(y[k], -5);
-						y[k] = Math.min(y[k], 5);
 					} else {
-						y[k] = g[j][k];
+						y[k] = g[j][k] + K * (g[r1][k] - g[j][k]) + F
+								* (g[r2][k] - g[r3][k]);
 					}
 				}
 
@@ -842,8 +877,12 @@ public class player19 implements ContestSubmission {
 					// update counter
 					if (st == 1)
 						ns_1++;
-					else
+					else if(st == 2)
 						ns_2++;
+					else if(st == 3)
+						ns_3++;
+					else
+						ns_4++;
 
 					CRsuc++;
 					CRsum += CR[j];
@@ -855,8 +894,12 @@ public class player19 implements ContestSubmission {
 				} else {
 					if (st == 1)
 						nf_1++;
-					else
+					else if(st == 2)
 						nf_2++;
+					else if(st == 3)
+						nf_3++;
+					else
+						nf_4++;
 				}
 			}
 			gen++;
