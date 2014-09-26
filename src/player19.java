@@ -609,7 +609,7 @@ public class player19 implements ContestSubmission {
 		int ns_1 = 1, ns_2 = 1, nf_1 = 1, nf_2 = 1;// strategy selection counter
 		double p_1 = 0.5, p_2 = 0.5;// strategy selection probability
 		int randi = 0;
-		int a, b, c;// random index
+		int r1,r2,r3,r4,r5;// random index
 		int st = 1;// current strategy
 
 		double[][] g = neo_sampling(population);
@@ -628,8 +628,6 @@ public class player19 implements ContestSubmission {
 		// start evolution
 		for (int i = 0; i < generation; i++) {
 			// reset several parameter
-			F = Fm + rnd_.nextGaussian() * Fd;
-			F = Math.max(0.01, F);
 			if (i % 5 == 0) {
 				if (i % 25 == 0) {
 					CRm = CRsum / CRsuc;
@@ -653,31 +651,40 @@ public class player19 implements ContestSubmission {
 
 			for (int j = 0; j < population; j++) {
 				// set F, location undecided
-				
+				F = Fm + rnd_.nextGaussian() * Fd;
+				F = Math.max(0.01, F);
 				score_neo = 0;
 				do {
-					a = rnd_.nextInt(population);
-				} while (a == j);
+					r1 = rnd_.nextInt(population);
+				} while (r1 == j);
 
 				do {
-					b = rnd_.nextInt(population);
-				} while (b == j || b == a);
+					r2 = rnd_.nextInt(population);
+				} while (r2 == j || r2 == r1);
 
 				do {
-					c = rnd_.nextInt(population);
-				} while (c == j || c == a || c == b);
+					r3 = rnd_.nextInt(population);
+				} while (r3 == j || r3 == r1 || r3 == r2);
+				
+				do {
+					r4 = rnd_.nextInt(population);
+				} while (r4 == j || r4 == r1 || r4 == r2 || r4 == r3);
+				
+				do {
+					r5 = rnd_.nextInt(population);
+				} while (r5 == j || r5 == r1 || r5 == r2 || r5 == r3 || r5 == r4);
 
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
 					if (randi == k || randr < CR[j]) {
-						if (rnd_.nextDouble() <= p_1 && gen<generation/2) {
+						if (rnd_.nextDouble() <= p_1) {
 							st = 1;
-							y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
+							y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]);
 						} else {
 							st = 2;
-							y[k] = g[j][k] + F * (g[b][k] - g[c][k]) + F
-									* (bestX[k] - g[j][k]);
+							y[k] = g[j][k] + F * (bestX[k] - g[j][k]) + F
+									* (g[r1][k] - g[r2][k]);
 						}
 						y[k] = Math.max(y[k], -5);
 						y[k] = Math.min(y[k], 5);
@@ -739,7 +746,7 @@ public class player19 implements ContestSubmission {
 		int ns_1 = 1, ns_2 = 1, nf_1 = 1, nf_2 = 1;// strategy selection counter
 		double p_1 = 0.5, p_2 = 0.5;// strategy selection probability
 		int randi = 0;
-		int a, b, c;// random index
+		int r1,r2,r3,r4,r5;// random index
 		int st = 1;// current strategy
 
 		double[][] g = neo_sampling(population);
@@ -758,6 +765,8 @@ public class player19 implements ContestSubmission {
 		// start evolution
 		for (int i = 0; i < generation; i++) {
 			// reset several parameter
+			F = Fm + rnd_.nextGaussian() * Fd;
+			F = Math.max(0.01, F);
 			if (i % 5 == 0) {
 				if (i % 25 == 0) {
 					CRm = CRsum / CRsuc;
@@ -781,32 +790,40 @@ public class player19 implements ContestSubmission {
 
 			for (int j = 0; j < population; j++) {
 				// set F, location undecided
-				F = Fm + rnd_.nextGaussian() * Fd;
-				F = Math.max(0.01, F);
+				
 				score_neo = 0;
 				do {
-					a = rnd_.nextInt(population);
-				} while (a == j);
+					r1 = rnd_.nextInt(population);
+				} while (r1 == j);
 
 				do {
-					b = rnd_.nextInt(population);
-				} while (b == j || b == a);
+					r2 = rnd_.nextInt(population);
+				} while (r2 == j || r2 == r1);
 
 				do {
-					c = rnd_.nextInt(population);
-				} while (c == j || c == a || c == b);
+					r3 = rnd_.nextInt(population);
+				} while (r3 == j || r3 == r1 || r3 == r2);
+				
+				do {
+					r4 = rnd_.nextInt(population);
+				} while (r4 == j || r4 == r1 || r4 == r2 || r4 == r3);
+				
+				do {
+					r5 = rnd_.nextInt(population);
+				} while (r5 == j || r5 == r1 || r5 == r2 || r5 == r3 || r5 == r4);
 
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
 					if (randi == k || randr < CR[j]) {
-						if (rnd_.nextDouble() <= p_1 && gen < generation / 2) {
+						if (rnd_.nextDouble() <= p_1) {
 							st = 1;
-							y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
+							y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]);
 						} else {
 							st = 2;
-							y[k] = g[j][k] + F * (g[b][k] - g[c][k]) + F
-									* (bestX[k] - g[j][k]);
+							y[k] = g[j][k] + F * (bestX[k] - g[j][k]) + F
+									* (g[r1][k] - g[r2][k]) + F
+									* (g[r3][k] - g[r4][k]);
 						}
 						y[k] = Math.max(y[k], -5);
 						y[k] = Math.min(y[k], 5);

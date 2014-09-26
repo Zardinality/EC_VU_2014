@@ -64,9 +64,9 @@ public class AckleyEvaluation implements ContestEvaluation {
 
 		// Transform function value (sphere is minimization).
 		// Normalize using the base performance
-		double f = 20 * Math.exp(-0.2 * Math.sqrt(0.1 * func1(ind)))
-				+ Math.exp(0.1 * func2(ind)) - 10 - Math.exp(1);
-		double score = f;
+		double f = -20 * Math.exp(-0.2 * Math.sqrt(0.1 * func1(ind)))
+				- Math.exp(0.1 * func2(ind)) + 20 + Math.exp(1);
+		double score = Math.exp(-f) * 10;
 		if (score > best_)
 			best_ = score;
 		evaluations_++;
