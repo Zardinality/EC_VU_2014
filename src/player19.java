@@ -585,9 +585,138 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
-	// TODO
 	// Self-adaptive DE
 	private void SaDE() {
+		// set parameters
+		double[] CR;
+		double CRm = 0.5;
+		double CRd = 0.1;
+		double F = 0.5;
+		double Fm = 0.5;// initial, can be further increased
+		double Fd = 0.2;// deviation
+
+		int population = 100;
+		int generation = limit_ / population - 1;
+		int lp = 50;// learning period
+
+		// initialization
+		int CRsuc = 1;
+		double CRsum = 0.5;
+		double randr = 0.0;
+		double[] bestX = new double[DIM];
+		double best = -100.0;
+		int gen = 0;
+		int ns_1 = 1, ns_2 = 1, nf_1 = 1, nf_2 = 1;// strategy selection counter
+		double p_1 = 0.5, p_2 = 0.5;// strategy selection probability
+		int randi = 0;
+		int a, b, c;// random index
+		int st = 1;// current strategy
+
+		double[][] g = neo_sampling(population);
+		double[] score = new double[population];
+		CR = new double[population];
+		for (int i = 0; i < population; i++) {
+			score[i] = (Double) evaluation_.evaluate(g[i]);
+			if (score[i] > best) {
+				best = score[i];
+				bestX = g[i].clone();
+			}
+		}
+		double[] y = new double[DIM];
+		double score_neo = 0;
+
+		// start evolution
+		for (int i = 0; i < generation; i++) {
+			// reset several parameter
+			F = Fm + rnd_.nextGaussian() * Fd;
+			F = Math.max(0.01, F);
+			if (i % 5 == 0) {
+				if (i % 25 == 0) {
+					CRm = CRsum / CRsuc;
+					CRsum = 0.0;
+					CRsuc = 0;
+				}
+				for (int j = 0; j < population; j++) {
+					CR[j] = CRm + rnd_.nextGaussian() * CRd;
+					CR[j] = Math.max(0.1, CR[j]);
+				}
+			}
+			if (i % lp == 0) {
+				p_1 = 1.2 * ns_1 * (ns_2 + nf_2)
+						/ (ns_1 * (ns_2 + nf_2) + ns_2 * (ns_1 + nf_1));
+				p_2 = 1 - p_1;
+				ns_1 = 0;
+				ns_2 = 0;
+				nf_1 = 0;
+				nf_2 = 0;
+			}
+
+			for (int j = 0; j < population; j++) {
+				// set F, location undecided
+				
+				score_neo = 0;
+				do {
+					a = rnd_.nextInt(population);
+				} while (a == j);
+
+				do {
+					b = rnd_.nextInt(population);
+				} while (b == j || b == a);
+
+				do {
+					c = rnd_.nextInt(population);
+				} while (c == j || c == a || c == b);
+
+				randi = rnd_.nextInt(DIM);
+				for (int k = 0; k < DIM; k++) {
+					randr = rnd_.nextDouble();
+					if (randi == k || randr < CR[j]) {
+						if (rnd_.nextDouble() <= p_1 && gen<generation/2) {
+							st = 1;
+							y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
+						} else {
+							st = 2;
+							y[k] = g[j][k] + F * (g[b][k] - g[c][k]) + F
+									* (bestX[k] - g[j][k]);
+						}
+						y[k] = Math.max(y[k], -5);
+						y[k] = Math.min(y[k], 5);
+					} else {
+						y[k] = g[j][k];
+					}
+				}
+
+				score_neo = (Double) evaluation_.evaluate(y);
+				if (score_neo > score[j]) {
+					g[j] = y.clone();
+					score[j] = score_neo;
+					// update counter
+					if (st == 1)
+						ns_1++;
+					else
+						ns_2++;
+
+					CRsuc++;
+					CRsum += CR[j];
+
+					if (score[j] > best) {
+						best = score[j];
+						bestX = g[j].clone();
+					}
+				} else {
+					if (st == 1)
+						nf_1++;
+					else
+						nf_2++;
+				}
+			}
+			gen++;
+		}
+	}
+
+	// TODO
+	// neo Self-adaptive DE
+	private void NSaDE() {
 		// set parameters
 		double[] CR;
 		double CRm = 0.5;
@@ -671,7 +800,7 @@ public class player19 implements ContestSubmission {
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
 					if (randi == k || randr < CR[j]) {
-						if (rnd_.nextDouble() <= p_1 && gen<generation/2) {
+						if (rnd_.nextDouble() <= p_1 && gen < generation / 2) {
 							st = 1;
 							y[k] = g[a][k] + F * (g[b][k] - g[c][k]);
 						} else {
@@ -714,6 +843,7 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
+	
 	// 2 stages self-adapted DE
 	private void SSaDE() {
 		// set parameters

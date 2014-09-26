@@ -7,7 +7,7 @@ import java.lang.Math;
 
 public class FletcherEvaluation implements ContestEvaluation {
 
-	private final static int EVALS_LIMIT_ = 1000000;
+	private final static int EVALS_LIMIT_ = 500000;
 	private double best_;
 	private int evaluations_;
 
