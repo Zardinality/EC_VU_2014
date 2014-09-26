@@ -75,11 +75,11 @@ public class player19 implements ContestSubmission {
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
 		if (!mm)
-			NSaDE();
+			SaDE();
 		else if (rg)
-			NSaDE();
+			SaDE();
 		else
-			NSaDE();
+			SaDE();
 	}
 
 	
@@ -612,7 +612,7 @@ public class player19 implements ContestSubmission {
 		int r1,r2,r3,r4,r5;// random index
 		int st = 1;// current strategy
 
-		double[][] g = neo_sampling(population);
+		double[][] g = sampling(population);
 		double[] score = new double[population];
 		CR = new double[population];
 		for (int i = 0; i < population; i++) {
