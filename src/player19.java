@@ -393,18 +393,18 @@ public class player19 implements ContestSubmission {
 			evaluation_.evaluate(g[i]);
 	}
 
-	// private void CMA_ES() {
-	// // set parameters (quite a lot...)
-	// int lambda = 100;// lambda
-	// int mu = lambda / 2;// mu
-	// double mu2 = (double) lambda / 2;// mu'
-	// double[] weight = new double[mu];// w
-	// double[] weight2 = new double[mu];// w'
-	// double sum = 0.0;
-	// for (int i = 0; i < mu; i++) {
-	// weight2[i] = Math.log(mu2 + 0.5) - Math.log(i);
-	// sum += weight2[i];
-	// }
+	private void CMA_ES() {
+	// Strategy parameter setting: Selection
+	int lambda = 100;   // population size, offsprint number
+	int mu = lambda / 2;    // 
+	double mu_p = (double) lambda / 2;  // mu'
+	double[] w = new double[mu];    // w
+	double[] w_p = new double[mu];   // w'
+	double sum = 0.0;
+	 for (int i = 0; i < mu; i++) {
+            w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
+            sum += w_p[i];
+	 }
 	// double sum2 = 0.0;
 	// for (int i = 0; i < mu; i++) {
 	// weight[i] = weight2[i] / sum;
@@ -461,7 +461,7 @@ public class player19 implements ContestSubmission {
 	// for (int j = 0; j < DIM; j++) {
 	// z[k].append(rnd_.nextGaussian());
 	// }
-	// }
+	}
 	//
 	// // Decomposite C
 	// EigenDecomposition decomp = new EigenDecomposition(C);
