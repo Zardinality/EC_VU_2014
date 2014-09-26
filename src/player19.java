@@ -673,16 +673,19 @@ public class player19 implements ContestSubmission {
 				do {
 					r5 = rnd_.nextInt(population);
 				} while (r5 == j || r5 == r1 || r5 == r2 || r5 == r3 || r5 == r4);
-
+				
+				if (rnd_.nextDouble() <= p_1) {
+					st = 1;
+				} else {
+					st = 2;
+				}
 				randi = rnd_.nextInt(DIM);
 				for (int k = 0; k < DIM; k++) {
 					randr = rnd_.nextDouble();
 					if (randi == k || randr < CR[j]) {
-						if (rnd_.nextDouble() <= p_1) {
-							st = 1;
+						if (st == 1) {
 							y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]);
 						} else {
-							st = 2;
 							y[k] = g[j][k] + F * (bestX[k] - g[j][k]) + F
 									* (g[r1][k] - g[r2][k]);
 						}
