@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.Properties;
 import java.util.Arrays;
 import java.lang.Math;
+import java.util.Comparator;
 
 import org.ejml.simple.*;
 
@@ -432,14 +433,15 @@ public class player19 implements ContestSubmission {
             // * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
             
             // Initialization
-            double[] p_sigma = new double[DIM];
+            SimpleMatrix p_sigma = new SimpleMatrix(DIM, 1);
             // double p_norm = 0;
-            double[] p_c = new double[DIM];
+            SimpleMatrix p_c = new SimpleMatrix(DIM, 1);
             // double h_sigma = 0;
             // double[][] g = sampling(population_);
             SimpleMatrix C = SimpleMatrix.identity(DIM);
             SimpleMatrix m = new SimpleMatrix(DIM, 1);
             double sigma = 3;
+            double chiN = Math.sqrt(DIM) * (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
             
             for (int g = 0; g < generation_; g++) {
                 // Sample new population of search points
@@ -464,7 +466,28 @@ public class player19 implements ContestSubmission {
                 }
                 
                 // Selection and recombination
+                SimpleMatrix y_w = m.copy();
                 CMA_sort(x, lambda);
+                m.set(0);
+                for (int i = 0; i < mu; i++) {
+                    m.plus(w[i], x[i]);
+                }
+                y_w = m.minus(y_w).divide(sigma);
+                
+                // Step-size control
+                SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
+                p_sigma = p_sigma.scale(1 - c_sigma).plus(C_nsqrt.mult(y_w).scale(Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
+                sigma = sigma * Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
+                
+                //Covariance matrix adaptation
+                int h_sigma;
+                if (p_sigma.normF() / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2 / (DIM + 1)) * chiN)
+                    h_sigma = 1;
+                else
+                    h_sigma = 0;
+                double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
+                p_c = p_c.scale(1 - c_c).plus(y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
+                C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).p;
             }
 	}
         
@@ -480,9 +503,15 @@ public class player19 implements ContestSubmission {
         private void CMA_sort(SimpleMatrix[] x, int lambda) {
             
             class fitComparator implements Comparator {
-                public final int compare(SimpleMatrix a, SimpleMatrix) {
-                    double diff = a.get(DIM, 1) - a.get(DIM, 1);
-                    return -diff;
+                @Override
+                public final int compare(Object a, Object b) {
+                    double diff = ((SimpleMatrix)a).get(DIM, 1) - ((SimpleMatrix)b).get(DIM, 1);
+                    if (diff == 0)
+                        return 0;
+                    else if (diff < 0)
+                        return 1;
+                    else
+                        return -1;
                 }
             }
             
@@ -493,7 +522,10 @@ public class player19 implements ContestSubmission {
                 x_fit[i].setColumn(1, 0, gene);
                 x_fit[i].set(DIM, 1, (Double) evaluation_.evaluate(gene));
             }
-            Arrays.sort(x_fit);
+            Arrays.sort(x_fit, new fitComparator());
+            for (int i = 0; i < lambda; i++) {
+                x[i].setColumn(1, 0, x_fit[i].extractMatrix(0, DIM, 0, 1).getMatrix().getData());
+            }
         }
         
         
