@@ -207,10 +207,10 @@ public class player19 implements ContestSubmission {
 		R[i][j] = -Math.sin(angle);
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
-                SimpleMatrix RR = new SimpleMatrix(R);
-                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
-                SimpleMatrix ggnext = RR.mult(gg);
-                gnext = ggnext.getMatrix().getData();
+		SimpleMatrix RR = new SimpleMatrix(R);
+		SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+		SimpleMatrix ggnext = RR.mult(gg);
+		gnext = ggnext.getMatrix().getData();
 		return gnext;
 	}
 
@@ -668,15 +668,7 @@ public class player19 implements ContestSubmission {
 				do {
 					r3 = rnd_.nextInt(population);
 				} while (r3 == j || r3 == r1 || r3 == r2);
-				/*
-				do {
-					r4 = rnd_.nextInt(population);
-				} while (r4 == j || r4 == r1 || r4 == r2 || r4 == r3);
-				
-				do {
-					r5 = rnd_.nextInt(population);
-				} while (r5 == j || r5 == r1 || r5 == r2 || r5 == r3 || r5 == r4);
-				*/
+
 				if (rnd_.nextDouble() <= p_1) {
 					st = 1;
 				} else {
@@ -856,8 +848,8 @@ public class player19 implements ContestSubmission {
 								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k]);
 							} else if (st == 2) {
 								y[k] = g[j][k] + F[j] * (bestX[k] - g[j][k])
-										+ F[j] * (g[r1][k] - g[r2][k]) + F[j]
-										* (g[r3][k] - g[r4][k]);
+										+ F[j] * (g[r1][k] - g[r2][k]) + F[j];
+										//* (g[r3][k] - g[r4][k]);
 							} else {
 								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k])
 										+ F[j] * (g[r4][k] - g[r5][k]);
