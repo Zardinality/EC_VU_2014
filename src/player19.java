@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.lang.Math;
 import java.util.Comparator;
 
-
 import org.ejml.simple.*;
 
 public class player19 implements ContestSubmission {
