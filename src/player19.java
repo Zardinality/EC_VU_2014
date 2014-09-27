@@ -731,8 +731,7 @@ public class player19 implements ContestSubmission {
 		double[][] CR;
 		double[] CRm = { 0.5, 0.5, 0.5, 0.5 };
 		double CRd = 0.1;
-		double F = 0.5;
-		int K = 4;// #number of strategies
+		int num_st = 4;// #number of strategies
 		double Fm = 0.5;// initial, can be further increased
 		double Fd = 0.2;// deviation
 		double sigma = 0.01;//
@@ -748,12 +747,14 @@ public class player19 implements ContestSubmission {
 		double[] bestX = new double[DIM];
 		double best = -100.0;
 		int gen = 0;
-		int[] ns = {1,1,1,1};// strategy selection counter
-		int[] nf = {1,1,1,1};// strategy selection counter
-		double[] p = new double[K];// strategy
-																// selection
-																// probability
-		double[] s = new double[K];
+		double[] F = new double[population];
+		double[] K = new double[population];
+		int[] ns = { 1, 1, 1, 1 };// strategy selection counter
+		int[] nf = { 1, 1, 1, 1 };// strategy selection counter
+		double[] p = new double[num_st];// strategy
+										// selection
+										// probability
+		double[] s = new double[num_st];
 		double s_sum;
 		int randi = 0;
 		int r1, r2, r3, r4, r5;// random index
@@ -761,7 +762,7 @@ public class player19 implements ContestSubmission {
 
 		double[][] g = neo_sampling(population);
 		double[] score = new double[population];
-		CR = new double[population][K];
+		CR = new double[population][num_st];
 		for (int i = 0; i < population; i++) {
 			score[i] = (Double) evaluation_.evaluate(g[i]);
 			if (score[i] > best) {
@@ -777,39 +778,39 @@ public class player19 implements ContestSubmission {
 			// reset several parameter
 			if (i % (lp / 5) == 0) {
 				if (i % lp == 0) {
-					for (int k = 0; k < K; k++) {
+					for (int k = 0; k < num_st; k++) {
 						CRm[k] = CRsum[k] / CRsuc[k];
 						CRsum[k] = 0.0;
 						CRsuc[k] = 0;
 					}
+
+					// update strategies probability
+					s_sum = 0;
+					for (int k = 0; k < num_st; k++) {
+						s[k] = (double) ns[k] / (ns[k] + nf[k]) + sigma;
+						s_sum += s[k];
+					}
+
+					for (int k = 0; k < num_st; k++) {
+						p[k] = s[k] / s_sum;
+						ns[k] = 0;
+						nf[k] = 0;
+					}
 				}
 				for (int j = 0; j < population; j++) {
-					for (int k = 0; k < K; k++) {
+					for (int k = 0; k < num_st; k++) {
 						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
 						CR[j][k] = Math.max(0.1, CR[j][k]);
 					}
-				}
-			}
-
-			// update strategies probability
-			if (i % lp == 0) {
-				s_sum = 0;
-				for(int k = 0; k < K; k++) {
-					s[k]=  (double)ns[k] / (ns[k] + nf[k]) + sigma;
-					s_sum+=s[k];
-				}
-
-				for(int k = 0; k < K; k++) {
-					p[k]= s[k] / s_sum; 
-					ns[k] = 0;
-					nf[k] = 0;
+					F[j] = Fm + rnd_.nextGaussian() * Fd;
+					F[j] = Math.max(0.01, F[j]);
+					K[j] = rnd_.nextDouble();
 				}
 			}
 
 			for (int j = 0; j < population; j++) {
 				// set F, location decided
-				F = Fm + rnd_.nextGaussian() * Fd;
-				F = Math.max(0.01, F);
+
 				score_neo = 0;
 				do {
 					r1 = rnd_.nextInt(population);
@@ -847,16 +848,16 @@ public class player19 implements ContestSubmission {
 				for (int k = 0; k < DIM; k++) {
 					if (st != 4) {
 						randr = rnd_.nextDouble();
-						if (randi == k || randr < CR[j][st-1]) {
+						if (randi == k || randr < CR[j][st - 1]) {
 							if (st == 1) {
-								y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]);
+								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k]);
 							} else if (st == 2) {
-								y[k] = g[j][k] + F * (bestX[k] - g[j][k]) + F
-										* (g[r1][k] - g[r2][k]) + F
+								y[k] = g[j][k] + F[j] * (bestX[k] - g[j][k])
+										+ F[j] * (g[r1][k] - g[r2][k]) + F[j]
 										* (g[r3][k] - g[r4][k]);
 							} else {
-								y[k] = g[r1][k] + F * (g[r2][k] - g[r3][k]) + F
-										* (g[r4][k] - g[r5][k]);
+								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k])
+										+ F[j] * (g[r4][k] - g[r5][k]);
 							}
 							y[k] = Math.max(y[k], -5);
 							y[k] = Math.min(y[k], 5);
@@ -864,8 +865,7 @@ public class player19 implements ContestSubmission {
 							y[k] = g[j][k];
 						}
 					} else {
-						y[k] = g[j][k] + rnd_.nextDouble()
-								* (g[r1][k] - g[j][k]) + F
+						y[k] = g[j][k] + K[j] * (g[r1][k] - g[j][k]) + F[j]
 								* (g[r2][k] - g[r3][k]);
 					}
 				}
@@ -874,18 +874,18 @@ public class player19 implements ContestSubmission {
 				if (score_neo > score[j]) {
 					g[j] = y.clone();
 					score[j] = score_neo;
-					
+
 					// update counter
-					ns[st-1]++;
-					CRsuc[st-1]++;
-					CRsum[st-1] += CR[j][st-1];
+					ns[st - 1]++;
+					CRsuc[st - 1]++;
+					CRsum[st - 1] += CR[j][st - 1];
 
 					if (score[j] > best) {
 						best = score[j];
 						bestX = g[j].clone();
 					}
 				} else {
-					nf[st-1]++;
+					nf[st - 1]++;
 				}
 			}
 			gen++;
