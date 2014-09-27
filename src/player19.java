@@ -6,7 +6,7 @@ import java.util.Properties;
 import java.util.Arrays;
 import java.lang.Math;
 
-import org.ejml.data.Matrix64F;
+import org.ejml.simple.SimpleMatrix;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -26,7 +26,6 @@ public class player19 implements ContestSubmission {
 	int algIndex_;
 	double[] var_;// store the best
 	boolean mm_, rg_, sp_;
-	Matrix64F M;
 
 	public player19() {
 		rnd_ = new Random();
@@ -208,6 +207,10 @@ public class player19 implements ContestSubmission {
 		R[i][j] = -Math.sin(angle);
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
+                SimpleMatrix RR = new SimpleMatrix(R);
+                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+                SimpleMatrix ggnext = RR.mult(gg);
+                gnext = ggnext.getMatrix().getData();
 		return gnext;
 	}
 
