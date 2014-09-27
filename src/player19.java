@@ -207,6 +207,10 @@ public class player19 implements ContestSubmission {
 		R[i][j] = -Math.sin(angle);
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
+                SimpleMatrix RR = new SimpleMatrix(R);
+                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+                SimpleMatrix ggnext = RR.mult(gg);
+                gnext = ggnext.getMatrix().getData();
 		return gnext;
 	}
 
@@ -447,9 +451,14 @@ public class player19 implements ContestSubmission {
                 // for (int k = 0; k < lambda; k++) {
                 // for (int j = 0; j < DIM; j++) {
                 // z[k].append(rnd_.nextGaussian());
+                
                 for (int k = 0; k < lambda; k++) {
+                    x[k] = new SimpleMatrix(DIM, 1);
+                    y[k] = new SimpleMatrix(DIM, 1);
+                    z[k] = new SimpleMatrix(DIM, 1);
                     for (int i = 0; i < DIM; i++) {
-                        z[k].set(i, col, value); = 1;
+                        z[k].set(i, 1, rnd_.nextGaussian());
+                        y[k] = 
                     }
                 }
             }
