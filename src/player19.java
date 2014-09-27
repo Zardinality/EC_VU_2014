@@ -75,11 +75,11 @@ public class player19 implements ContestSubmission {
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
 		if (!mm)
-			golden();
+			CMA_ES();
 		else if (rg)
-			SaDE();
+			CMA_ES();
 		else
-			SaDE();
+			CMA_ES();
 	}
 
 	
@@ -400,7 +400,7 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES() {
             // Set parameters
             //  - Selection and Recombination
-            int lambda = (int) (4 + 3 * Math.log(DIM));   // population size, offsprint number
+            int lambda = (int) 50;   // population size, offsprint number
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
@@ -412,7 +412,7 @@ public class player19 implements ContestSubmission {
              }
              double sum_p = 0.0;
              for (int i = 0; i < mu; i++) {
-                w[i] = w[i] / sum;
+                w[i] = w_p[i] / sum;
                 sum_p += Math.pow(w[i], 2);
              }
              
@@ -459,21 +459,24 @@ public class player19 implements ContestSubmission {
                     z[k] = new SimpleMatrix(DIM, 1);
                     for (int i = 0; i < DIM; i++) {
                         // TODO
-                        z[k].set(i, 1, rnd_.nextGaussian());
-                        y[k] = B.mult(D).mult(x[k]);
+                        z[k].set(i, 0, rnd_.nextGaussian());
+                        y[k] = B.mult(D).mult(z[k]);
                         x[k] = m.plus(sigma, y[k]);
                     }
+                    //x[k].print();
                 }
                 
                 // Selection and recombination
-                SimpleMatrix y_w = m.copy();
+                SimpleMatrix y_w;
+                SimpleMatrix m_bak = m.copy();
                 CMA_sort(x, lambda);
                 m.set(0);
                 for (int i = 0; i < mu; i++) {
+                    //x[i].print();
                     m = m.plus(w[i], x[i]);
-                    y[i] = x[i].minus(y_w).divide(sigma);
+                    y[i] = x[i].minus(m_bak).divide(sigma);
                 }
-                y_w = m.minus(y_w).divide(sigma);
+                y_w = m.minus(m_bak).divide(sigma);
                 
                 // Step-size control
                 SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
@@ -492,11 +495,13 @@ public class player19 implements ContestSubmission {
                 for (int i = 0; i < mu; i++) {
                     y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
                 }
+                //y_sqrsum.print();
                 C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).plus(c_mu, y_sqrsum);
             }
 	}
         
         private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
+            //C.print();
             SimpleEVD EVD_C = C.eig();
             int n = EVD_C.getNumberOfEigenvalues();
             for (int i = 0; i < n; i++) {
@@ -510,7 +515,7 @@ public class player19 implements ContestSubmission {
             class fitComparator implements Comparator {
                 @Override
                 public final int compare(Object a, Object b) {
-                    double diff = ((SimpleMatrix)a).get(DIM, 1) - ((SimpleMatrix)b).get(DIM, 1);
+                    double diff = ((SimpleMatrix)a).get(DIM, 0) - ((SimpleMatrix)b).get(DIM, 0);
                     if (diff == 0)
                         return 0;
                     else if (diff < 0)
@@ -524,12 +529,12 @@ public class player19 implements ContestSubmission {
             for (int i = 0; i < lambda; i++) {
                 double[] gene = x[i].getMatrix().getData();
                 x_fit[i] = new SimpleMatrix(DIM + 1, 1);
-                x_fit[i].setColumn(1, 0, gene);
-                x_fit[i].set(DIM, 1, (Double) evaluation_.evaluate(gene));
+                x_fit[i].setColumn(0, 0, gene);
+                x_fit[i].set(DIM, 0, (Double) evaluation_.evaluate(gene));
             }
             Arrays.sort(x_fit, new fitComparator());
             for (int i = 0; i < lambda; i++) {
-                x[i].setColumn(1, 0, x_fit[i].extractMatrix(0, DIM, 0, 1).getMatrix().getData());
+                x[i].setColumn(0, 0, x_fit[i].extractMatrix(0, DIM, 0, 1).getMatrix().getData());
             }
         }
         
