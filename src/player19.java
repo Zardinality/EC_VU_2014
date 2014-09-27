@@ -470,7 +470,8 @@ public class player19 implements ContestSubmission {
                 CMA_sort(x, lambda);
                 m.set(0);
                 for (int i = 0; i < mu; i++) {
-                    m.plus(w[i], x[i]);
+                    m = m.plus(w[i], x[i]);
+                    y[i] = x[i].minus(y_w).divide(sigma);
                 }
                 y_w = m.minus(y_w).divide(sigma);
                 
@@ -487,7 +488,11 @@ public class player19 implements ContestSubmission {
                     h_sigma = 0;
                 double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
                 p_c = p_c.scale(1 - c_c).plus(y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
-                C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).p;
+                SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
+                for (int i = 0; i < mu; i++) {
+                    y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
+                }
+                C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).plus(c_mu, y_sqrsum);
             }
 	}
         
