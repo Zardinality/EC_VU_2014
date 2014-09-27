@@ -6,7 +6,7 @@ import java.util.Properties;
 import java.util.Arrays;
 import java.lang.Math;
 
-import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.*;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -446,23 +446,57 @@ public class player19 implements ContestSubmission {
                 SimpleMatrix[] x = new SimpleMatrix[lambda];
                 SimpleMatrix[] y = new SimpleMatrix[lambda];
                 SimpleMatrix[] z = new SimpleMatrix[lambda];
-                // for (int i = 0; i < generation_; i++) {
-                // // Compute z_k
-                // for (int k = 0; k < lambda; k++) {
-                // for (int j = 0; j < DIM; j++) {
-                // z[k].append(rnd_.nextGaussian());
+                
+                SimpleMatrix B = new SimpleMatrix(DIM, DIM);
+                SimpleMatrix D = new SimpleMatrix(DIM, DIM);
+                evd_matrix(C, B, D);
                 
                 for (int k = 0; k < lambda; k++) {
                     x[k] = new SimpleMatrix(DIM, 1);
                     y[k] = new SimpleMatrix(DIM, 1);
                     z[k] = new SimpleMatrix(DIM, 1);
                     for (int i = 0; i < DIM; i++) {
+                        // TODO
                         z[k].set(i, 1, rnd_.nextGaussian());
-                        y[k] = 
+                        y[k] = B.mult(D).mult(x[k]);
+                        x[k] = m.plus(sigma, y[k]);
                     }
                 }
+                
+                // Selection and recombination
+                CMA_sort(x, lambda);
             }
 	}
+        
+        private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
+            SimpleEVD EVD_C = C.eig();
+            int n = EVD_C.getNumberOfEigenvalues();
+            for (int i = 0; i < n; i++) {
+                B.setColumn(i, 0, EVD_C.getEigenVector(i).getMatrix().getData());
+                D.set(i, i, EVD_C.getEigenvalue(i).getReal());
+            }
+        }
+        
+        private void CMA_sort(SimpleMatrix[] x, int lambda) {
+            
+            class fitComparator implements Comparator {
+                public final int compare(SimpleMatrix a, SimpleMatrix) {
+                    double diff = a.get(DIM, 1) - a.get(DIM, 1);
+                    return -diff;
+                }
+            }
+            
+            SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
+            for (int i = 0; i < lambda; i++) {
+                double[] gene = x[i].getMatrix().getData();
+                x_fit[i] = new SimpleMatrix(DIM + 1, 1);
+                x_fit[i].setColumn(1, 0, gene);
+                x_fit[i].set(DIM, 1, (Double) evaluation_.evaluate(gene));
+            }
+            Arrays.sort(x_fit);
+        }
+        
+        
 	//
 	// // Decomposite C
 	// EigenDecomposition decomp = new EigenDecomposition(C);
