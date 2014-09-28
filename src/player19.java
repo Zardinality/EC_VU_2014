@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.lang.Math;
 import java.util.Comparator;
 
-//import org.ejml.simple.*;
+import org.ejml.simple.*;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -210,10 +210,10 @@ public class player19 implements ContestSubmission {
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
 
-//                SimpleMatrix RR = new SimpleMatrix(R);
-//                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
-//                SimpleMatrix ggnext = RR.mult(gg);
-//                gnext = ggnext.getMatrix().getData();
+                SimpleMatrix RR = new SimpleMatrix(R);
+                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+                SimpleMatrix ggnext = RR.mult(gg);
+                gnext = ggnext.getMatrix().getData();
 
 		return gnext;
 	}
