@@ -210,10 +210,10 @@ public class player19 implements ContestSubmission {
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
 
-                SimpleMatrix RR = new SimpleMatrix(R);
-                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
-                SimpleMatrix ggnext = RR.mult(gg);
-                gnext = ggnext.getMatrix().getData();
+//                SimpleMatrix RR = new SimpleMatrix(R);
+//                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+//                SimpleMatrix ggnext = RR.mult(gg);
+//                gnext = ggnext.getMatrix().getData();
 
 		return gnext;
 	}
