@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.lang.Math;
 import java.util.Comparator;
 
-import org.ejml.simple.*;
+//import org.ejml.simple.*;
 
 public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
@@ -75,11 +75,11 @@ public class player19 implements ContestSubmission {
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
 		if (!mm)
-			CMA_ES();
+			golden();
 		else if (rg)
-			CMA_ES();
+			SaDE();
 		else
-			CMA_ES();
+			NSaDE();
 
 	}
 
@@ -210,10 +210,10 @@ public class player19 implements ContestSubmission {
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
 
-                SimpleMatrix RR = new SimpleMatrix(R);
-                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
-                SimpleMatrix ggnext = RR.mult(gg);
-                gnext = ggnext.getMatrix().getData();
+//                SimpleMatrix RR = new SimpleMatrix(R);
+//                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+//                SimpleMatrix ggnext = RR.mult(gg);
+//                gnext = ggnext.getMatrix().getData();
 
 		return gnext;
 	}
@@ -400,217 +400,146 @@ public class player19 implements ContestSubmission {
 			evaluation_.evaluate(g[i]);
 	}
 
-	private void CMA_ES() {
-            // Set parameters
-            //  - Selection and Recombination
-            int lambda = (int) 50;   // population size, offsprint number
-            int mu = lambda / 2;    // 
-            double mu_p = (double) lambda / 2;  // mu'
-            double[] w = new double[mu];    // w
-            double[] w_p = new double[mu];   // w'
-            double sum = 0.0;
-             for (int i = 0; i < mu; i++) {
-                w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
-                sum += w_p[i];
-             }
-             double sum_p = 0.0;
-             for (int i = 0; i < mu; i++) {
-                w[i] = w_p[i] / sum;
-                sum_p += Math.pow(w[i], 2);
-             }
-             
-            // Set parameters
-            //  - Step-size control
-            double mu_eff = 1 / sum_p;
-            double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
-            double d_sigma = 1 + 2 * Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1) + c_sigma;
-            
-            // Set parameters
-            //  - Covariance matrix adaptation
-            double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
-            double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
-            double alpha_mu = 2;
-            double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff) / (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
-            
-            // double E_norm = Math.sqrt(DIM)
-            // * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
-            
-            // Initialization
-            SimpleMatrix p_sigma = new SimpleMatrix(DIM, 1);
-            // double p_norm = 0;
-            SimpleMatrix p_c = new SimpleMatrix(DIM, 1);
-            // double h_sigma = 0;
-            // double[][] g = sampling(population_);
-            SimpleMatrix C = SimpleMatrix.identity(DIM);
-            SimpleMatrix m = new SimpleMatrix(DIM, 1);
-            double sigma = 3;
-            double chiN = Math.sqrt(DIM) * (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
-            
-            for (int g = 0; g < generation_; g++) {
-                // Sample new population of search points
-                SimpleMatrix[] x = new SimpleMatrix[lambda];
-                SimpleMatrix[] y = new SimpleMatrix[lambda];
-                SimpleMatrix[] z = new SimpleMatrix[lambda];
-                
-                SimpleMatrix B = new SimpleMatrix(DIM, DIM);
-                SimpleMatrix D = new SimpleMatrix(DIM, DIM);
-                evd_matrix(C, B, D);
-                
-                for (int k = 0; k < lambda; k++) {
-                    x[k] = new SimpleMatrix(DIM, 1);
-                    y[k] = new SimpleMatrix(DIM, 1);
-                    z[k] = new SimpleMatrix(DIM, 1);
-                    for (int i = 0; i < DIM; i++) {
-                        // TODO
-                        z[k].set(i, 0, rnd_.nextGaussian());
-                        y[k] = B.mult(D).mult(z[k]);
-                        x[k] = m.plus(sigma, y[k]);
-                    }
-                    //x[k].print();
-                }
-                
-                // Selection and recombination
-                SimpleMatrix y_w;
-                SimpleMatrix m_bak = m.copy();
-                CMA_sort(x, lambda);
-                m.set(0);
-                for (int i = 0; i < mu; i++) {
-                    //x[i].print();
-                    m = m.plus(w[i], x[i]);
-                    y[i] = x[i].minus(m_bak).divide(sigma);
-                }
-                y_w = m.minus(m_bak).divide(sigma);
-                
-                // Step-size control
-                SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
-                p_sigma = p_sigma.scale(1 - c_sigma).plus(C_nsqrt.mult(y_w).scale(Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
-                sigma = sigma * Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
-                
-                //Covariance matrix adaptation
-                int h_sigma;
-                if (p_sigma.normF() / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2 / (DIM + 1)) * chiN)
-                    h_sigma = 1;
-                else
-                    h_sigma = 0;
-                double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
-                p_c = p_c.scale(1 - c_c).plus(y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
-                SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
-                for (int i = 0; i < mu; i++) {
-                    y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
-                }
-                //y_sqrsum.print();
-                C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).plus(c_mu, y_sqrsum);
-            }
-	}
-        
-        private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
-            //C.print();
-            SimpleEVD EVD_C = C.eig();
-            int n = EVD_C.getNumberOfEigenvalues();
-            for (int i = 0; i < n; i++) {
-                B.setColumn(i, 0, EVD_C.getEigenVector(i).getMatrix().getData());
-                D.set(i, i, EVD_C.getEigenvalue(i).getReal());
-            }
-        }
-        
-        private void CMA_sort(SimpleMatrix[] x, int lambda) {
-            
-            class fitComparator implements Comparator {
-                @Override
-                public final int compare(Object a, Object b) {
-                    double diff = ((SimpleMatrix)a).get(DIM, 0) - ((SimpleMatrix)b).get(DIM, 0);
-                    if (diff == 0)
-                        return 0;
-                    else if (diff < 0)
-                        return 1;
-                    else
-                        return -1;
-                }
-            }
-            
-            SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
-            for (int i = 0; i < lambda; i++) {
-                double[] gene = x[i].getMatrix().getData();
-                x_fit[i] = new SimpleMatrix(DIM + 1, 1);
-                x_fit[i].setColumn(0, 0, gene);
-                x_fit[i].set(DIM, 0, (Double) evaluation_.evaluate(gene));
-            }
-            Arrays.sort(x_fit, new fitComparator());
-            for (int i = 0; i < lambda; i++) {
-                x[i].setColumn(0, 0, x_fit[i].extractMatrix(0, DIM, 0, 1).getMatrix().getData());
-            }
-        }
-        
-        
-	//
-	// // Decomposite C
-	// EigenDecomposition decomp = new EigenDecomposition(C);
-	// RealMatrix B = decomp.getV();
-	// RealMatrix D = decomp.getD();
-	// for (int j = 0; j < DIM; j++) {
-	// D.setEntry(j, j, Math.sqrt(D.getEntry(j, j)));
-	// }
-	//
-	// // Compute y_k and x_k
-	// for (int k = 0; k < lambda; k++) {
-	// y[k] = B.multiply(D).operate(x[k]);
-	// x[k] = y[k].mapMultiply(sigma).add(mean);
-	// }
-	//
-	// }
-	//
-	// }
-	//
-	// private double[][] CMA_sample(int lambda, int mu, double m, double sigma,
-	// double[][] cov) {
-	// double[][] g = new double[lambda][DIM];
-	// RealMatrix B, C, D, BT;
-	// EigenDecomposition c, d;
-	// C = new Array2DRowRealMatrix(cov);
-	// c = new EigenDecomposition(C);
-	// B = c.getV();
-	// D = c.getD();
-	// BT = c.getVT();
-	// return g;
-	// }
-	//
-	// private double[][] CMA_sort(double[][] g) {
-	// Arrays.sort(g, new Comparator<double[]>() {
-	// @Override
-	// public int compare(double[] a, double[] b) {
-	// return Double.compare(b[0], a[0]);
-	// }
-	// });
-	// return g;
-	// }
-	//
-	// private RealVector[] CMA_sort(RealVector[] g) {
-	// Arrays.sort(g, new Comparator<RealVector>() {
-	// @Override
-	// public int compare(RealVector a, RealVector b) {
-	// return Double.compare(a.getEntry(DIM), b.getEntry(DIM));
-	// }
-	// });
-	// return g;
-	// }
-	//
-	// private double[] CMA_mean(double[][] g, double[] weight, int mu) {
-	// double[] m = new double[DIM];
-	// double[] sum = new double[DIM];
-	// int l = g.length;
-	// if (mu > l)
-	// throw new RuntimeException("mu > l");
-	//
-	// for (int i = 0; i < DIM; i++) {
-	// sum[i] = 0;
-	// for (int j = 0; j < mu; j++)
-	// sum[i] += weight[j] * g[i][j];
-	// m[i] = sum[i] / l;
-	// }
-	// return m;
-	// }
-
-	
+//	private void CMA_ES() {
+//            // Set parameters
+//            //  - Selection and Recombination
+//            int lambda = (int) 50;   // population size, offsprint number
+//            int mu = lambda / 2;    // 
+//            double mu_p = (double) lambda / 2;  // mu'
+//            double[] w = new double[mu];    // w
+//            double[] w_p = new double[mu];   // w'
+//            double sum = 0.0;
+//             for (int i = 0; i < mu; i++) {
+//                w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
+//                sum += w_p[i];
+//             }
+//             double sum_p = 0.0;
+//             for (int i = 0; i < mu; i++) {
+//                w[i] = w_p[i] / sum;
+//                sum_p += Math.pow(w[i], 2);
+//             }
+//             
+//            // Set parameters
+//            //  - Step-size control
+//            double mu_eff = 1 / sum_p;
+//            double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
+//            double d_sigma = 1 + 2 * Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1) + c_sigma;
+//            
+//            // Set parameters
+//            //  - Covariance matrix adaptation
+//            double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
+//            double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
+//            double alpha_mu = 2;
+//            double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff) / (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
+//            
+//            // double E_norm = Math.sqrt(DIM)
+//            // * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
+//            
+//            // Initialization
+//            SimpleMatrix p_sigma = new SimpleMatrix(DIM, 1);
+//            // double p_norm = 0;
+//            SimpleMatrix p_c = new SimpleMatrix(DIM, 1);
+//            // double h_sigma = 0;
+//            // double[][] g = sampling(population_);
+//            SimpleMatrix C = SimpleMatrix.identity(DIM);
+//            SimpleMatrix m = new SimpleMatrix(DIM, 1);
+//            double sigma = 3;
+//            double chiN = Math.sqrt(DIM) * (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
+//            
+//            for (int g = 0; g < generation_; g++) {
+//                // Sample new population of search points
+//                SimpleMatrix[] x = new SimpleMatrix[lambda];
+//                SimpleMatrix[] y = new SimpleMatrix[lambda];
+//                SimpleMatrix[] z = new SimpleMatrix[lambda];
+//                
+//                SimpleMatrix B = new SimpleMatrix(DIM, DIM);
+//                SimpleMatrix D = new SimpleMatrix(DIM, DIM);
+//                evd_matrix(C, B, D);
+//                
+//                for (int k = 0; k < lambda; k++) {
+//                    x[k] = new SimpleMatrix(DIM, 1);
+//                    y[k] = new SimpleMatrix(DIM, 1);
+//                    z[k] = new SimpleMatrix(DIM, 1);
+//                    for (int i = 0; i < DIM; i++) {
+//                        // TODO
+//                        z[k].set(i, 0, rnd_.nextGaussian());
+//                        y[k] = B.mult(D).mult(z[k]);
+//                        x[k] = m.plus(sigma, y[k]);
+//                    }
+//                    //x[k].print();
+//                }
+//                
+//                // Selection and recombination
+//                SimpleMatrix y_w;
+//                SimpleMatrix m_bak = m.copy();
+//                CMA_sort(x, lambda);
+//                m.set(0);
+//                for (int i = 0; i < mu; i++) {
+//                    //x[i].print();
+//                    m = m.plus(w[i], x[i]);
+//                    y[i] = x[i].minus(m_bak).divide(sigma);
+//                }
+//                y_w = m.minus(m_bak).divide(sigma);
+//                
+//                // Step-size control
+//                SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
+//                p_sigma = p_sigma.scale(1 - c_sigma).plus(C_nsqrt.mult(y_w).scale(Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
+//                sigma = sigma * Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
+//                
+//                //Covariance matrix adaptation
+//                int h_sigma;
+//                if (p_sigma.normF() / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2 / (DIM + 1)) * chiN)
+//                    h_sigma = 1;
+//                else
+//                    h_sigma = 0;
+//                double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
+//                p_c = p_c.scale(1 - c_c).plus(y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
+//                SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
+//                for (int i = 0; i < mu; i++) {
+//                    y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
+//                }
+//                //y_sqrsum.print();
+//                C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).plus(c_mu, y_sqrsum);
+//            }
+//	}
+//        
+//        private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
+//            //C.print();
+//            SimpleEVD EVD_C = C.eig();
+//            int n = EVD_C.getNumberOfEigenvalues();
+//            for (int i = 0; i < n; i++) {
+//                B.setColumn(i, 0, EVD_C.getEigenVector(i).getMatrix().getData());
+//                D.set(i, i, EVD_C.getEigenvalue(i).getReal());
+//            }
+//        }
+//        
+//        private void CMA_sort(SimpleMatrix[] x, int lambda) {
+//            
+//            class fitComparator implements Comparator {
+//                @Override
+//                public final int compare(Object a, Object b) {
+//                    double diff = ((SimpleMatrix)a).get(DIM, 0) - ((SimpleMatrix)b).get(DIM, 0);
+//                    if (diff == 0)
+//                        return 0;
+//                    else if (diff < 0)
+//                        return 1;
+//                    else
+//                        return -1;
+//                }
+//            }
+//            
+//            SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
+//            for (int i = 0; i < lambda; i++) {
+//                double[] gene = x[i].getMatrix().getData();
+//                x_fit[i] = new SimpleMatrix(DIM + 1, 1);
+//                x_fit[i].setColumn(0, 0, gene);
+//                x_fit[i].set(DIM, 0, (Double) evaluation_.evaluate(gene));
+//            }
+//            Arrays.sort(x_fit, new fitComparator());
+//            for (int i = 0; i < lambda; i++) {
+//                x[i].setColumn(0, 0, x_fit[i].extractMatrix(0, DIM, 0, 1).getMatrix().getData());
+//            }
+//        }
 	
 	// Differential Evolution
 	private void DE() {
