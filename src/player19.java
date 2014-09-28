@@ -78,9 +78,12 @@ public class player19 implements ContestSubmission {
 			golden();
 		else if (rg)
 			SaDE();
-		else
-			NSaDE();
-
+		else {
+			int trial = 10;
+			for (int i = 0; i < trial; i++) {
+				NSaDE(trial);
+			}
+		}
 	}
 
 	
@@ -727,7 +730,7 @@ public class player19 implements ContestSubmission {
 
 	// TODO
 	// neo Self-adaptive DE
-	private void NSaDE() {
+	private void NSaDE(int trial) {
 		// set parameters
 		double[][] CR;
 		double[] CRm = { 0.5, 0.5, 0.5, 0.5 };
@@ -738,7 +741,7 @@ public class player19 implements ContestSubmission {
 		double sigma = 0.01;//
 
 		int population = 100;
-		int generation = limit_ / population - 1;
+		int generation = (limit_ / population - 1)/trial;
 		int lp = 50;// learning period
 
 		// initialization
@@ -784,41 +787,6 @@ public class player19 implements ContestSubmission {
 
 		// start evolution
 		for (int i = 0; i < generation; i++) {
-			// reset several parameter
-			/*
-			if (i % (lp / 5) == 0) {
-				if (i % lp == 0) {
-					for (int k = 0; k < num_st; k++) {
-						CRm[k] = CRsum[k] / CRsuc[k];
-						CRsum[k] = 0.0;
-						CRsuc[k] = 0;
-					}
-
-					// update strategies probability
-					s_sum = 0;
-					for (int k = 0; k < num_st; k++) {
-						s[k] = (double) ns[k] / (ns[k] + nf[k]) + sigma;
-						s_sum += s[k];
-					}
-
-					for (int k = 0; k < num_st; k++) {
-						p[k] = s[k] / s_sum;
-						ns[k] = 0;
-						nf[k] = 0;
-					}
-				}
-				for (int j = 0; j < population; j++) {
-					for (int k = 0; k < num_st; k++) {
-						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
-						CR[j][k] = Math.max(0.1, CR[j][k]);
-					}
-					F[j] = Fm + rnd_.nextGaussian() * Fd;
-					// F[j] = Math.max(0.01, F[j]);
-					K[j] = rnd_.nextDouble();
-				}
-			}
-			*/
-			//K = rnd_.nextDouble();
 			
 			if(i >= lp){
 				for (int j = 0; j < num_st; j++) {
@@ -852,7 +820,7 @@ public class player19 implements ContestSubmission {
 				for(int j = 0; j < population;j++){
 					for (int k = 0; k < num_st; k++) {
 						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
-						CR[j][k] = Math.max(0.1, CR[j][k]);
+						//CR[j][k] = Math.max(0.1, CR[j][k]);
 					}
 				}
 			}else{
@@ -914,8 +882,8 @@ public class player19 implements ContestSubmission {
 								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k]);
 							} else if (st == 2) {
 								y[k] = g[j][k] + F[j] * (bestX[k] - g[j][k])
-										+ F[j] * (g[r1][k] - g[r2][k]);
-										// + F[j]* (g[r3][k] - g[r4][k]);
+										+ F[j] * (g[r1][k] - g[r2][k])
+										 + F[j]* (g[r3][k] - g[r4][k]);
 							} else {
 								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k])
 										+ F[j] * (g[r4][k] - g[r5][k]);
