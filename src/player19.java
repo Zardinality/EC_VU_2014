@@ -74,9 +74,9 @@ public class player19 implements ContestSubmission {
 
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
-                SimpleMatrix test = new SimpleMatrix(DIM, 1);
+                //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			SaDE();
+			golden();
 		else if (rg)
 			SaDE();
 		else {
@@ -84,7 +84,7 @@ public class player19 implements ContestSubmission {
 			do {
 				NSaDE();
 				// trial++;
-			} while (limit_ > 4000);
+			} while (limit_ > 5000);
 			// System.out.println(Integer.toString(trial));
 		}
 	}
