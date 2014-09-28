@@ -53,9 +53,9 @@ public class player19 implements ContestSubmission {
 		rg_ = Boolean.parseBoolean(props.getProperty("Regular"));
 		sp_ = Boolean.parseBoolean(props.getProperty("Separable"));
 		limit_ = (int) Double.parseDouble(props.getProperty("Evaluations"));
-		// Do something with property values, e.g. specify relevant settings of
-		// your
-		// algorithm
+		
+		// Do something with property values
+		
 		population_ = (int) Math.round(Math.sqrt(limit_)) / 8;
 		generation_ = ((int) Math.floor(limit_) - population_)
 				/ (population_ * 6);
@@ -79,10 +79,12 @@ public class player19 implements ContestSubmission {
 		else if (rg)
 			SaDE();
 		else {
-			int trial = 10;
-			for (int i = 0; i < trial; i++) {
-				NSaDE(trial);
-			}
+			// int trial = 0;
+			do {
+				NSaDE();
+				// trial++;
+			} while (limit_ > 5000);
+			// System.out.println(Integer.toString(trial));
 		}
 	}
 
@@ -730,7 +732,7 @@ public class player19 implements ContestSubmission {
 
 	// TODO
 	// neo Self-adaptive DE
-	private void NSaDE(int trial) {
+	private void NSaDE() {
 		// set parameters
 		double[][] CR;
 		double[] CRm = { 0.5, 0.5, 0.5, 0.5 };
@@ -741,7 +743,7 @@ public class player19 implements ContestSubmission {
 		double sigma = 0.01;//
 
 		int population = 100;
-		int generation = (limit_ / population - 1)/trial;
+		int generation = (limit_ / population - 1);
 		int lp = 50;// learning period
 
 		// initialization
@@ -777,6 +779,7 @@ public class player19 implements ContestSubmission {
 		CR = new double[population][num_st];
 		for (int i = 0; i < population; i++) {
 			score[i] = (Double) evaluation_.evaluate(g[i]);
+			limit_--;
 			if (score[i] > best) {
 				best = score[i];
 				bestX = g[i].clone();
@@ -784,7 +787,10 @@ public class player19 implements ContestSubmission {
 		}
 		double[] y = new double[DIM];
 		double score_neo = 0;
-
+		double[] gen_score = new double[generation];
+		for(int i = 0; i < generation;i++){
+			gen_score[i] = best;
+		}
 		// start evolution
 		for (int i = 0; i < generation; i++) {
 			
@@ -900,6 +906,7 @@ public class player19 implements ContestSubmission {
 				}
 
 				score_neo = (Double) evaluation_.evaluate(y);
+				limit_--;
 				if (score_neo > score[j]) {
 					g[j] = y.clone();
 					score[j] = score_neo;
@@ -918,6 +925,10 @@ public class player19 implements ContestSubmission {
 				}
 			}
 			gen++;
+			gen_score[i] = best;
+			if (gen > 100 && gen_score[i] - gen_score[i - 10] < 0.000001) {
+				break;
+			}
 		}
 	}
 
