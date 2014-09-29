@@ -78,11 +78,11 @@ public class player19 implements ContestSubmission {
 		if (!mm)
 			golden();
 		else if (rg)
-			SaDE();
+			Cauchy_DE();
 		else {
 			// int trial = 0;
 			do {
-				NSaDE();
+				Cauchy_DE();
 				// trial++;
 			} while (limit_ > 5000);
 			// System.out.println(Integer.toString(trial));
@@ -260,12 +260,12 @@ public class player19 implements ContestSubmission {
 	// golden evolution
 	private void golden() {
 		double[] g = new double[DIM];
-		int pop = 400;// population_/2 - 1;
+		int pop = limit_/3 - 1;// population_/2 - 1;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
-		pop = 500;
+		//pop = 500;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
 		evaluation_.evaluate(g);
@@ -933,6 +933,96 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
+	// Differential Evolution
+	private void Cauchy_DE() {
+		// set parameters
+		
+		int population = 100;
+		int generation = limit_ / population - 1;
+		double[] CR = new double[population];
+		double[] F = new double[population]; 
+		double[] CR_mem = new double[population];
+		double[] F_mem = new double[population]; 
+		double F_avg;
+		double CR_avg;
+		double F_sum;
+		double CR_sum;
+
+		// initialization
+		double randr = 0.0;
+		int randi = 0;
+		int a, b, c;
+		int counter;
+		double[][] g = sampling(population);
+		double[] score = new double[population];
+		for (int i = 0; i < population; i++) {
+			score[i] = (Double) evaluation_.evaluate(g[i]);
+			limit_--;
+			CR[i] = 0.9;
+			F[i] = 0.5;
+		}
+		double[] y = new double[DIM];
+		double score_neo = 0;
+		for (int i = 0; i < generation; i++) {
+			counter = 0;
+			for (int j = 0; j < population; j++) {
+				score_neo = 0;
+				do {
+					a = rnd_.nextInt(population);
+				} while (a == j);
+
+				do {
+					b = rnd_.nextInt(population);
+				} while (b == j || b == a);
+
+				do {
+					c = rnd_.nextInt(population);
+				} while (c == j || c == a || c == b);
+
+				randi = rnd_.nextInt(DIM);
+				for (int k = 0; k < DIM; k++) {
+					randr = rnd_.nextDouble();
+					if (randi == k || randr < CR[j]) {
+						y[k] = g[a][k] + F[j] * (g[b][k] - g[c][k]);
+						y[k] = Math.max(y[k], -5);
+						y[k] = Math.min(y[k], 5);
+					} else {
+						y[k] = g[j][k];
+					}
+				}
+				score_neo = (Double) evaluation_.evaluate(y);
+				limit_--;
+				if (score_neo > score[j]) {
+					g[j] = y.clone();
+					score[j] = score_neo;
+					F_mem[counter] = F[j];
+					CR_mem[counter] = CR[j];
+					counter++;
+				}
+			}
+			if(counter>0){
+				F_sum = 0;
+				CR_sum = 0;
+				for(int k = 0 ; k < counter;k++){
+					F_sum+=F_mem[k];
+					CR_sum+=CR_mem[k];
+				}
+				F_avg = F_sum/counter;
+				CR_avg = CR_sum / counter;
+				for (int j = 0; j < population; j++) {
+					F[j] = Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * 0.1
+							+ F_avg;
+					CR[j] = Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * 0.1
+							+ CR_avg;
+					F[j] = Math.max(F[j], 0.1);
+					F[j] = Math.min(F[j], 1);
+					CR[j] = Math.max(CR[j], 0);
+					CR[j] = Math.min(CR[j], 1);
+				}
+			}
+			
+		}
+	}
 	
 	// 2 stages self-adapted DE
 	private void SSaDE() {
