@@ -80,7 +80,7 @@ public class player19 implements ContestSubmission {
 		else if (rg)
 			SaDE();
 		else {
-			Cauchy_DE();
+			CMA_ES();
 		}
 	}
 
@@ -405,7 +405,7 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES() {
             // Set parameters
             //  - Selection and Recombination
-            int lambda = (int) 50;   // population size, offsprint number
+            int lambda = (int) (4 + 3 * Math.log(DIM));   // population size, offsprint number
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
