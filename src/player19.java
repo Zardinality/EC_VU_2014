@@ -13,7 +13,7 @@ public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
 
 	public static final int RECOMB_MEAN = 0, RECOMB_DISCRETE = 1,
-			RECOMB_RANDOM = 2;
+			RECOMB_RANDOM  = 2;
 
 	Random rnd_;
 	ContestEvaluation evaluation_;
@@ -405,7 +405,8 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES() {
             // Set parameters
             //  - Selection and Recombination
-            int lambda = (int) (4 + 3 * Math.log(DIM));   // population size, offsprint number
+            int lambda = (int) (40);   // population size, offsprint number
+            int generation = limit_ / lambda / 10 - 1;
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
@@ -448,7 +449,7 @@ public class player19 implements ContestSubmission {
             double sigma = 3;
             double chiN = Math.sqrt(DIM) * (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
             
-            for (int g = 0; g < generation_; g++) {
+            for (int g = 0; g < generation; g++) {
                 // Sample new population of search points
                 SimpleMatrix[] x = new SimpleMatrix[lambda];
                 SimpleMatrix[] y = new SimpleMatrix[lambda];
