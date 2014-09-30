@@ -13,7 +13,7 @@ public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
 
 	public static final int RECOMB_MEAN = 0, RECOMB_DISCRETE = 1,
-			RECOMB_RANDOM = 2;
+			RECOMB_RANDOM  = 2;
 
 	Random rnd_;
 	ContestEvaluation evaluation_;
@@ -76,9 +76,9 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			CMA_ES();
+			golden();
 		else if (rg)
-			CMA_ES();
+			SaDE();
 		else {
 			CMA_ES();
 		}
@@ -405,7 +405,8 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES() {
             // Set parameters
             //  - Selection and Recombination
-            int lambda = (int) 50;   // population size, offsprint number
+            int lambda = (int) (40);   // population size, offsprint number
+            int generation = limit_ / lambda / 10 - 1;
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
@@ -448,7 +449,7 @@ public class player19 implements ContestSubmission {
             double sigma = 3;
             double chiN = Math.sqrt(DIM) * (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
             
-            for (int g = 0; g < generation_; g++) {
+            for (int g = 0; g < generation; g++) {
                 // Sample new population of search points
                 SimpleMatrix[] x = new SimpleMatrix[lambda];
                 SimpleMatrix[] y = new SimpleMatrix[lambda];
@@ -1284,13 +1285,13 @@ public class player19 implements ContestSubmission {
 		for (int i = population / 2; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
 				if (g[i - population / 2][j] > 0) {
-					g[i][j] = g[i - population / 2][j] / 3 - 10 / 3;
+					g[i][j] = (g[i - population / 2][j] - 5) / 2;
 				} else if (g[i - population / 2][j] < 0) {
-					g[i][j] = g[i - population / 2][j] / 3 + 10 / 3;
+					g[i][j] = (g[i - population / 2][j] + 5) / 2;
 				} else {
 					g[i][j] = rnd_.nextDouble() * 10 - 5;
 				}
-
+				
 			}
 		}
 		return g;
