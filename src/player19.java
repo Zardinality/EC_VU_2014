@@ -78,9 +78,9 @@ public class player19 implements ContestSubmission {
 		if (!mm)
 			golden();
 		else if (rg)
-			Cauchy_DE();
+			SaDE();
 		else {
-			CMA_ES();
+			Cauchy_DE();
 		}
 	}
 
