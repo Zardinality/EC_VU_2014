@@ -76,9 +76,9 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			golden();
+			CMA_ES();
 		else if (rg)
-			Cauchy_DE();
+			CMA_ES();
 		else {
 			CMA_ES();
 		}
@@ -1284,13 +1284,13 @@ public class player19 implements ContestSubmission {
 		for (int i = population / 2; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
 				if (g[i - population / 2][j] > 0) {
-					g[i][j] = (g[i - population / 2][j] - 5) / 2;
+					g[i][j] = g[i - population / 2][j] / 3 - 10 / 3;
 				} else if (g[i - population / 2][j] < 0) {
-					g[i][j] = (g[i - population / 2][j] + 5) / 2;
+					g[i][j] = g[i - population / 2][j] / 3 + 10 / 3;
 				} else {
 					g[i][j] = rnd_.nextDouble() * 10 - 5;
 				}
-				
+
 			}
 		}
 		return g;
