@@ -255,14 +255,15 @@ public class player19 implements ContestSubmission {
 	// golden evolution
 	private void golden() {
 		double[] g = new double[DIM];
-		int pop = limit_/3 - 1;// population_/2 - 1;
+		int pop = limit_/5 - 1;// population_/2 - 1;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
+		pop = limit_ - limit_/5 - 1;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
 		//pop = 500;
-		for (int i = 0; i < DIM; i++)
-			g[i] = gd_trial(i, (pop) / DIM);
+		//for (int i = 0; i < DIM; i++)
+		//	g[i] = gd_trial(i, (pop) / DIM);
 		evaluation_.evaluate(g);
 	}
 	
