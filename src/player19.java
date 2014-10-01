@@ -466,17 +466,24 @@ public class player19 implements ContestSubmission {
                 SimpleMatrix D = new SimpleMatrix(DIM, DIM);
                 evd_matrix(C, B, D);
                 
-                for (int k = 0; k < lambda; k++) {
-                    x[k] = new SimpleMatrix(DIM, 1);
-                    y[k] = new SimpleMatrix(DIM, 1);
-                    z[k] = new SimpleMatrix(DIM, 1);
-                    for (int i = 0; i < DIM; i++) {
-                        // TODO
-                        z[k].set(i, 0, rnd_.nextGaussian());
-                        y[k] = B.mult(D).mult(z[k]);
-                        x[k] = m.plus(sigma, y[k]);
-                    }
-                    //x[k].print();
+                if (g == 0) {
+                	double[][] tmp = neo_sampling(lambda);
+                	for (int k = 0; k < lambda; k++) {
+                		x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
+                	}
+                } else {
+	                for (int k = 0; k < lambda; k++) {
+	                    x[k] = new SimpleMatrix(DIM, 1);
+	                    y[k] = new SimpleMatrix(DIM, 1);
+	                    z[k] = new SimpleMatrix(DIM, 1);
+	                    for (int i = 0; i < DIM; i++) {
+	                        // TODO
+	                        z[k].set(i, 0, rnd_.nextGaussian());
+	                        y[k] = B.mult(D).mult(z[k]);
+	                        x[k] = m.plus(sigma, y[k]);
+	                    }
+	                    //x[k].print();
+	                }
                 }
                 
                 // Selection and recombination
