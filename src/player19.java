@@ -80,7 +80,7 @@ public class player19 implements ContestSubmission {
 		else if (rg)
 			SaDE();
 		else {
-			CMA_ES();
+			CMA_ES_RS();
 		}
 	}
 
@@ -402,11 +402,19 @@ public class player19 implements ContestSubmission {
 			evaluation_.evaluate(g[i]);
 	}
 
-	private void CMA_ES() {
+	private void CMA_ES_RS() {
+		CMA_ES(40);
+		int lambda = (int)(4 + 3 * Math.log(DIM));
+		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+			CMA_ES(lambda);
+			lambda = lambda * 2;
+		}
+	}
+	
+	private void CMA_ES(int lambda) {
             // Set parameters
             //  - Selection and Recombination
-            int lambda = (int) (40);   // population size, offsprint number
-            int generation = limit_ / lambda / 10 - 1;
+            int generation = (int)(100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda));
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
@@ -516,7 +524,8 @@ public class player19 implements ContestSubmission {
             }
         }
         
-        private void CMA_sort(SimpleMatrix[] x, int lambda) {
+        @SuppressWarnings("unchecked")
+		private void CMA_sort(SimpleMatrix[] x, int lambda) {
             
             class fitComparator implements Comparator {
                 @Override
@@ -537,6 +546,7 @@ public class player19 implements ContestSubmission {
                 x_fit[i] = new SimpleMatrix(DIM + 1, 1);
                 x_fit[i].setColumn(0, 0, gene);
                 x_fit[i].set(DIM, 0, (Double) evaluation_.evaluate(gene));
+                limit_--;
             }
             Arrays.sort(x_fit, new fitComparator());
             for (int i = 0; i < lambda; i++) {
