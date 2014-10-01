@@ -403,11 +403,10 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		CMA_ES(40);
-		int lambda = (int)(4 + 3 * Math.log(DIM));
+		int lambda = 40;
 		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda);
-			lambda = lambda * 2;
+			//lambda = lambda * 2;
 		}
 	}
 	
