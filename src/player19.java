@@ -404,7 +404,7 @@ public class player19 implements ContestSubmission {
 
 	private void CMA_ES_RS() {
 		int lambda = 40;
-		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+		for (int i = 0; i < 15; i++) {
 			CMA_ES(lambda);
 			//lambda = lambda * 2;
 		}
