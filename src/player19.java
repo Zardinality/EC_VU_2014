@@ -76,9 +76,9 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			CMA_ES_RS();
+			golden();
 		else if (rg)
-			CMA_ES_RS();
+			SaDE();
 		else {
 			CMA_ES_RS();
 		}
@@ -403,8 +403,8 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 40;
-		for (int i = 0; i < 15; i++) {
+		int lambda = 50;
+		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda);
 			//lambda = lambda * 2;
 		}
