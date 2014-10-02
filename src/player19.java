@@ -76,9 +76,9 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			golden();
+			CMA_ES_RS();
 		else if (rg)
-			SaDE();
+			CMA_ES_RS();
 		else {
 			CMA_ES_RS();
 		}
