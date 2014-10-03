@@ -403,8 +403,8 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 60;
-		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+		int lambda = 50;
+		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda) / 2)) {
 			CMA_ES(lambda);
 			//lambda = lambda * 2;
 		}
@@ -413,7 +413,7 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES(int lambda) {
             // Set parameters
             //  - Selection and Recombination
-            int generation = (int)(100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda));
+            int generation = (int)(100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda) / 2);
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
