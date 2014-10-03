@@ -80,7 +80,9 @@ public class player19 implements ContestSubmission {
 		else if (rg)
 			SaDE();
 		else {
-			CMA_ES_RS();
+			while(limit_>1000){
+				NSaDE();
+			}
 		}
 	}
 
@@ -839,6 +841,7 @@ public class player19 implements ContestSubmission {
 				
 				for(int j = 0; j < population;j++){
 					for (int k = 0; k < num_st; k++) {
+						//CR[j][k] = CRm[k] + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
 						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
 						//CR[j][k] = Math.max(0.1, CR[j][k]);
 					}
@@ -846,6 +849,7 @@ public class player19 implements ContestSubmission {
 			}else{
 				for(int j = 0; j < population;j++){
 					for (int k = 0; k < num_st; k++) {
+						//CR[j][k] = CRm[k] + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
 						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
 						CR[j][k] = Math.max(0.1, CR[j][k]);
 						ns_mem[i%lp][k] = 0;
@@ -940,7 +944,7 @@ public class player19 implements ContestSubmission {
 			}
 			gen++;
 			gen_score[i] = best;
-			if (gen > 100 && gen_score[i] - gen_score[i - 10] < 0.000001) {
+			if (gen > 100 && gen_score[i] - gen_score[i - 20] < 0.00000001) {
 				break;
 			}
 		}
