@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.Properties;
 import java.util.Arrays;
 import java.lang.Math;
-import java.lang.reflect.Array;
 import java.util.Comparator;
 
 import org.ejml.simple.*;
@@ -77,11 +76,11 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			Cauchy_DE();
+			golden();
 		else if (rg)
-			Cauchy_DE();
+			SaDE();
 		else {
-			Cauchy_DE();
+			CMA_ES_RS();
 		}
 	}
 
@@ -404,8 +403,8 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 40;
-		for (int i = 0; i < 15; i++) {
+		int lambda = 50;
+		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda) / 2)) {
 			CMA_ES(lambda);
 			//lambda = lambda * 2;
 		}
@@ -414,7 +413,7 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES(int lambda) {
             // Set parameters
             //  - Selection and Recombination
-            int generation = (int)(100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda));
+            int generation = (int)(100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda) / 2);
             int mu = lambda / 2;    // 
             double mu_p = (double) lambda / 2;  // mu'
             double[] w = new double[mu];    // w
@@ -575,10 +574,8 @@ public class player19 implements ContestSubmission {
 		int a, b, c;
 		double[][] g = sampling(population);
 		double[] score = new double[population];
-		for (int i = 0; i < population; i++){
+		for (int i = 0; i < population; i++)
 			score[i] = (Double) evaluation_.evaluate(g[i]);
-		}
-		score = DE_niching(g, score, population);
 		double[] y = new double[DIM];
 		double score_neo = 0;
 		for (int i = 0; i < generation; i++) {
@@ -608,7 +605,6 @@ public class player19 implements ContestSubmission {
 					}
 				}
 				score_neo = (Double) evaluation_.evaluate(y);
-				score_neo = DE_niching(g, score_neo, j, population);
 				if (score_neo > score[j]) {
 					g[j] = y.clone();
 					score[j] = score_neo;
@@ -616,59 +612,7 @@ public class player19 implements ContestSubmission {
 			}
 		}
 	}
-	
-	
-	//TODO
-	private double DE_niching(double[][] g, double score, int index, int population){
-		double nich = 0;
-		double[] d = new double[population];
-		double sigma = 1;
-		double share_sum = 0;
-		double alpha = 1;
-		
-		for(int i = 0; i < population;i++){
-			d[i] = dist(g[index],g[i]);
-			if (d[i]<sigma) {
-				share_sum+= 1 - Math.pow(d[i]/sigma, alpha);
-			}
-		}
-		nich = score/share_sum;
-		
-		return nich;
-	}
-	
-	private double[] DE_niching(double[][] g, double[] score, int population){
-		double[] nich = new double[population];
-		double[] d = new double[population];
-		double sigma = 1;
-		double share_sum = 0;
-		double alpha = 1;
-		
-		for (int index = 0; index < population; index++) {
-			share_sum = 0;
-			for (int i = 0; i < population; i++) {
-				d[i] = dist(g[index], g[i]);
-				if (d[i] < sigma) {
-					share_sum += 1 - Math.pow(d[i] / sigma, alpha);
-				}
-			}
-			nich[index] = score[index] / share_sum;
-		}
-		
-		return nich;
-	}
-	
-	private double dist(double[] a,double[] b) {
-		int dim = Array.getLength(a);
-		double sum = 0;
-		for(int i = 0; i < dim;i++){
-			sum+= Math.pow(b[i]-a[i],2);
-		}
-		return Math.sqrt(sum);
-	}
-	
-	
-	
+
 	// Self-adaptive DE
 	private void SaDE() {
 		// set parameters
@@ -1030,7 +974,6 @@ public class player19 implements ContestSubmission {
 			CR[i] = 0.9;
 			F[i] = 0.5;
 		}
-		score = DE_niching(g, score, population);
 		double[] y = new double[DIM];
 		double score_neo = 0;
 		for (int i = 0; i < generation; i++) {
@@ -1061,7 +1004,6 @@ public class player19 implements ContestSubmission {
 					}
 				}
 				score_neo = (Double) evaluation_.evaluate(y);
-				score_neo = DE_niching(g, score_neo, j, population);
 				limit_--;
 				if (score_neo > score[j]) {
 					g[j] = y.clone();
