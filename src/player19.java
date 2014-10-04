@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Arrays;
 import java.lang.Math;
 import java.util.Comparator;
+import java.lang.reflect.Array;
 
 import org.ejml.simple.*;
 
@@ -77,11 +78,11 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			golden();
+			MVMO();
 		else if (rg)
-			SaDE();
+			MVMO();
 		else {
-			CMA_ES_RS();
+			MVMO();
 		}
 	}
 
@@ -1151,6 +1152,194 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
+	
+	//TODO
+		// Mean-Variance Mapping Optimization
+		@SuppressWarnings("unused")
+		private void MVMO() {
+
+			// set parameter
+			int lambda = 5;
+			double gamma = 0;
+			double f_s_ini = 0.1;
+			double f_s_final = 20;
+			double f_s = f_s_ini;
+			double f_s_star = f_s;
+			double d_0 = 0.25;
+			double m_ini = DIM / 6;
+			double m_final = DIM / 2;
+			double alpha_LS_min = 0.23;
+
+			// initial
+			double[] score = new double[lambda];
+			double[] mean = new double[DIM];
+			double[] shape = new double[DIM];
+			double[] d_factor = new double[DIM];
+			int m, m_star, i_max = limit_ / 2;
+			double alpha;
+			double[][] archive = new double[lambda][DIM + 1];
+
+			// avg, si, di, si1, si2
+			double[][] param = new double[5][DIM];
+			
+			double score_neo = 0;
+			double[] x = new double[DIM];
+			double[][] first = neo_sampling(lambda);
+			double h_x, h0, h1, x_star;
+
+			for (int i = 0; i < lambda; i++) {
+				archive[i] = Arrays.copyOf(normalize(first[i]), DIM + 1);
+				archive[i][DIM] = (Double) evaluation_.evaluate(first[i]);
+				limit_--;
+			}
+			Arrays.sort(archive, new java.util.Comparator<double[]>() {
+				public int compare(double[] a, double[] b) {
+					return Double.compare(b[DIM], a[DIM]);
+				}
+			});
+
+			for(int i = 0;i<DIM;i++){
+				param[2][i] = 1;
+			}
+			
+			int i = 0;
+			while (i < i_max) {
+				
+				alpha = i / i_max;
+				
+				if (rnd_.nextDouble() < gamma) {
+					score_neo = -100000;
+				} else {
+					score_neo = (Double) evaluation_.evaluate(denormalize(x));
+					limit_--;
+					i++;
+				}
+
+				// update archive
+				if (score_neo > archive[lambda - 1][DIM]) {
+					archive[lambda - 1] = Arrays.copyOf(x, DIM + 1);
+					archive[lambda - 1][DIM] = score_neo;
+					Arrays.sort(archive, new java.util.Comparator<double[]>() {
+						public int compare(double[] a, double[] b) {
+							return Double.compare(b[DIM], a[DIM]);
+						}
+					});
+					for (int j = 0; j < DIM; j++) {
+						double x_sum = 0, x_var = 0;
+						for (int k = 0; k < lambda; k++) {
+							x_sum += archive[k][j];
+						}
+						param[0][j] = x_sum / lambda;
+
+						for (int k = 0; k < lambda; k++) {
+							x_var += Math.pow(archive[k][j] - param[0][j], 2);
+						}
+						param[1][j] = -Math.log((x_var + 0.0000001)/ lambda) * f_s;//different form orig
+						if(Double.isInfinite(param[1][j])){
+							param[1][j] = 20;
+						}
+							
+						
+						param[3][j] = param[1][j];// si1
+						param[4][j] = param[1][j];// si2
+						if (param[1][j] > 0) {
+							double delta_d = (1 + d_0) + 2 * d_0
+									* (rnd_.nextDouble() - 0.5);
+							if (param[1][j] > param[2][j]) {
+								param[2][j] = param[2][j] * delta_d;
+							} else {
+								param[2][j] = param[2][j] / delta_d;
+							}
+							if (rnd_.nextDouble() > 0.5) {
+								param[3][j] = param[1][j];
+								param[4][j] = param[2][j];
+							} else {
+								param[3][j] = param[2][j];
+								param[4][j] = param[1][j];
+							}
+						}
+
+					}
+
+				}
+
+				// gen offspring
+				m_star = (int) Math.round(m_ini - Math.pow(alpha, 2)
+						* (m_ini - m_final));
+				m = (int) Math.round(m_final + rnd_.nextDouble()
+						* (m_star - m_final));
+
+				int[] index = getRandomPermutation(DIM);
+				
+				for (int j = 0; j < m; j++) {
+					int k = index[j];
+					x_star = rnd_.nextDouble();
+					h_x = MVMO_h(param[0][k], param[3][k], param[4][k], x_star);
+					h0 = MVMO_h(param[0][k], param[3][k], param[4][k], 0);
+					h1 = MVMO_h(param[0][k], param[3][k], param[4][k], 1);
+					x[k] = h_x + (1 - h1 + h0) * x_star - h0;
+				}
+				for (int j = m; j < DIM; j++) {
+					int k = index[j];
+					x[k] = archive[0][k];
+				}
+
+				f_s_star = f_s_ini + Math.pow(alpha, 2) * (f_s_final - f_s_ini);
+				f_s = f_s_star * (1 + rnd_.nextDouble());
+
+			}
+
+		}
+		
+		private double[] normalize(double[] a) {
+			int l = Array.getLength(a);
+			double[] b = new double[l];
+			for (int i = 0; i < l; i++) {
+				b[i] = (a[i] + 5) / 10;
+			}
+			return b;
+		}
+		
+		private double[] denormalize(double[] a) {
+			int l = Array.getLength(a);
+			double[] b = new double[l];
+			for (int i = 0; i < l; i++) {
+				b[i] = a[i] * 10 - 5;
+			}
+			return b;
+		}
+		
+		private double MVMO_h(double avg, double s1, double s2, double x) {
+			return avg * (1 - Math.exp(-x * s1)) + (1 - avg)
+					* Math.exp(-(1 - x) * s2);
+		}
+
+		private int[] getRandomPermutation(int length) {
+
+			// initialize array and fill it with {0,1,2...}
+			int[] array = new int[length];
+			for (int i = 0; i < array.length; i++)
+				array[i] = i;
+
+			for (int i = 0; i < length; i++) {
+
+				// randomly chosen position in array whose element
+				// will be swapped with the element in position i
+				// note that when i = 0, any position can chosen (0 thru length-1)
+				// when i = 1, only positions 1 through length -1
+				// NOTE: r is an instance of java.util.Random
+				int ran = i + rnd_.nextInt(length - i);
+
+				// perform swap
+				int temp = array[i];
+				array[i] = array[ran];
+				array[ran] = temp;
+			}
+			return array;
+		}
+
+	
+	
 	// partical swarm optimization
 	private void PSO() {
 		// set parameters
