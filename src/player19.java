@@ -78,11 +78,11 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			MVMO();
+			golden();
 		else if (rg)
-			MVMO();
+			SaDE();
 		else {
-			MVMO();
+			CMA_ES_RS();
 		}
 	}
 
