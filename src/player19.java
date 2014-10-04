@@ -81,9 +81,7 @@ public class player19 implements ContestSubmission {
 		else if (rg)
 			SaDE();
 		else {
-			while(limit_>1000){
-				NSaDE();
-			}
+			CMA_ES_RS();
 		}
 	}
 
