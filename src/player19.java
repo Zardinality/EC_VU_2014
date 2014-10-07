@@ -472,7 +472,7 @@ public class player19 implements ContestSubmission {
 			evd_matrix(C, B, D);
 
 			if (g == 0) {
-				double[][] tmp = sampling(lambda);
+				double[][] tmp = neo_sampling(lambda);
 				for (int k = 0; k < lambda; k++) {
 					x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
 				}
@@ -539,7 +539,8 @@ public class player19 implements ContestSubmission {
 					.plus(c_mu, y_sqrsum);
 
 			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff) {
-				if (limit_ < 10000) {
+				if (limit_ < (int) lambda
+						* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 					endDiff = 0;
 				} else {
 					break;
