@@ -78,9 +78,9 @@ public class player19 implements ContestSubmission {
 		// TODO
                 //SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			golden();
+			CMA_ES_RS();
 		else if (rg)
-			SaDE();
+			CMA_ES_RS();
 		else {
 			CMA_ES_RS();
 		}
@@ -1486,12 +1486,13 @@ public class player19 implements ContestSubmission {
 	// new sampling method
 	private double[][] opp_sampling(int population) {
 		double[][] g = new double[population][DIM];
-		for (int i = 0; i < population / 2; i++) {
+		int half = (int)Math.round((double)population / 2);
+		for (int i = 0; i < half; i++) {
 			for (int j = 0; j < DIM; j++) {
 				g[i][j] = rnd_.nextDouble() * 10 - 5;
 			}
 		}
-		for (int i = population / 2; i < population; i++) {
+		for (int i = half; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
 				g[i][j] = -g[i - population / 2][j];
 			}
@@ -1501,12 +1502,13 @@ public class player19 implements ContestSubmission {
 	
 	private double[][] neo_sampling(int population) {
 		double[][] g = new double[population][DIM];
-		for (int i = 0; i < population / 2; i++) {
+		int half = (int)Math.round((double)population / 2);
+		for (int i = 0; i < half; i++) {
 			for (int j = 0; j < DIM; j++) {
 				g[i][j] = rnd_.nextDouble() * 10 - 5;
 			}
 		}
-		for (int i = population / 2; i < population; i++) {
+		for (int i = half; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
 				if (g[i - population / 2][j] > 0) {
 					g[i][j] = g[i - population / 2][j]/3 - 10 / 3;
