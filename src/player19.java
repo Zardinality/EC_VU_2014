@@ -78,9 +78,9 @@ public class player19 implements ContestSubmission {
 		// TODO
 		// SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			CMA_ES_RS();
+			golden();
 		else if (rg)
-			CMA_ES_RS();
+			SaDE();
 		else {
 			CMA_ES_RS();
 		}
@@ -461,7 +461,7 @@ public class player19 implements ContestSubmission {
 
 		double[] best_score = new double[generation];
 
-		for (int g = 0; g < generation; g++) {
+		for (int g = 0;; g++) {
 			// Sample new population of search points
 			SimpleMatrix[] x = new SimpleMatrix[lambda];
 			SimpleMatrix[] y = new SimpleMatrix[lambda];
@@ -538,13 +538,14 @@ public class player19 implements ContestSubmission {
 							.plus(C.scale(delta_h_sigma)).scale(c_1))
 					.plus(c_mu, y_sqrsum);
 
-			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff) {
-				if (limit_ < (int) lambda
-						* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
-					endDiff = 0;
-				} else {
+			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff
+					&& limit_ >= (int) lambda
+					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 					break;
-				}
+			}
+			if (g + 1 >= generation && limit_ >= (int) lambda
+					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))){
+				break;
 			}
 		}
 	}
