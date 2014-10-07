@@ -14,7 +14,7 @@ public class player19 implements ContestSubmission {
 	public static final int DIM = 10;
 
 	public static final int RECOMB_MEAN = 0, RECOMB_DISCRETE = 1,
-			RECOMB_RANDOM  = 2;
+			RECOMB_RANDOM = 2;
 
 	Random rnd_;
 	ContestEvaluation evaluation_;
@@ -28,7 +28,7 @@ public class player19 implements ContestSubmission {
 	int algIndex_;
 	double[] var_;// store the best
 	boolean mm_, rg_, sp_;
-	double best_; //store the best in CMA_ES
+	double best_; // store the best in CMA_ES
 
 	public player19() {
 		rnd_ = new Random();
@@ -55,9 +55,9 @@ public class player19 implements ContestSubmission {
 		rg_ = Boolean.parseBoolean(props.getProperty("Regular"));
 		sp_ = Boolean.parseBoolean(props.getProperty("Separable"));
 		limit_ = (int) Double.parseDouble(props.getProperty("Evaluations"));
-		
+
 		// Do something with property values
-		
+
 		population_ = (int) Math.round(Math.sqrt(limit_)) / 8;
 		generation_ = ((int) Math.floor(limit_) - population_)
 				/ (population_ * 6);
@@ -76,7 +76,7 @@ public class player19 implements ContestSubmission {
 
 	private void evolution(boolean mm, boolean rg, boolean sp) {
 		// TODO
-                //SimpleMatrix test = new SimpleMatrix(DIM, 1);
+		// SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
 			CMA_ES_RS();
 		else if (rg)
@@ -86,7 +86,6 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
-	
 	// basic sampling, some novel method in the end
 	private double[][] sampling(int population) {
 		double[][] g = new double[population][DIM];
@@ -97,8 +96,7 @@ public class player19 implements ContestSubmission {
 		}
 		return g;
 	}
-	
-	
+
 	private void ES() {
 		int strategy = DIM * (DIM + 3) / 2;
 		double[][] g = ES_sampling();
@@ -110,7 +108,7 @@ public class player19 implements ContestSubmission {
 			g = ES_selection(gnext);
 		}
 	}
-	
+
 	private double[][] ES_sampling() {
 		int strategy = DIM * (DIM + 3) / 2;
 		double[][] g = new double[population_][strategy];
@@ -213,10 +211,10 @@ public class player19 implements ContestSubmission {
 		R[j][i] = Math.sin(angle);
 		// gnext = multiply(R, g);
 
-//                SimpleMatrix RR = new SimpleMatrix(R);
-//                SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
-//                SimpleMatrix ggnext = RR.mult(gg);
-//                gnext = ggnext.getMatrix().getData();
+		// SimpleMatrix RR = new SimpleMatrix(R);
+		// SimpleMatrix gg = new SimpleMatrix(DIM, 1, true, g);
+		// SimpleMatrix ggnext = RR.mult(gg);
+		// gnext = ggnext.getMatrix().getData();
 
 		return gnext;
 	}
@@ -252,23 +250,21 @@ public class player19 implements ContestSubmission {
 		return g;
 	}
 
-	
-	
 	// golden evolution
 	private void golden() {
 		double[] g = new double[DIM];
-		int pop = limit_/5 - 1;// population_/2 - 1;
+		int pop = limit_ / 5 - 1;// population_/2 - 1;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
-		pop = limit_ - limit_/5 - 1;
+		pop = limit_ - limit_ / 5 - 1;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
-		//pop = 500;
-		//for (int i = 0; i < DIM; i++)
-		//	g[i] = gd_trial(i, (pop) / DIM);
+		// pop = 500;
+		// for (int i = 0; i < DIM; i++)
+		// g[i] = gd_trial(i, (pop) / DIM);
 		evaluation_.evaluate(g);
 	}
-	
+
 	private double gd_trial(int dim, int population) {
 		int i, j, k;
 		double best = 0;
@@ -335,7 +331,6 @@ public class player19 implements ContestSubmission {
 		return score;
 	}
 
-	
 	// for mm seperable functions(not in those 3)
 	private double trialRg(int dim, int population) {
 		int i, j, k;
@@ -396,7 +391,6 @@ public class player19 implements ContestSubmission {
 		return best;
 	}
 
-
 	// benchmark score
 	private void Rnd() {
 		double[][] g = sampling(population_);
@@ -406,178 +400,200 @@ public class player19 implements ContestSubmission {
 
 	private void CMA_ES_RS() {
 		int lambda = 50;
-		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+		while (limit_ > (int) lambda
+				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda);
-			//lambda = lambda * 2;
+			// lambda = lambda * 2;
 		}
 	}
-	
+
 	private void CMA_ES(int lambda) {
-            // Set parameters
-            //  - Selection and Recombination
-            int generation = (int)(100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda));
-            int mu = lambda / 2;    // 
-            double mu_p = (double) lambda / 2;  // mu'
-            double[] w = new double[mu];    // w
-            double[] w_p = new double[mu];   // w'
-            double sum = 0.0;
-             for (int i = 0; i < mu; i++) {
-                w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
-                sum += w_p[i];
-             }
-             double sum_p = 0.0;
-             for (int i = 0; i < mu; i++) {
-                w[i] = w_p[i] / sum;
-                sum_p += Math.pow(w[i], 2);
-             }
-             
-            // Set parameters
-            //  - Step-size control
-            double mu_eff = 1 / sum_p;
-            double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
-            double d_sigma = 1 + 2 * Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1) + c_sigma;
-            
-            // Set parameters
-            //  - Covariance matrix adaptation
-            double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
-            double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
-            double alpha_mu = 2;
-            double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff) / (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
-            
-            // double E_norm = Math.sqrt(DIM)
-            // * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
-            
-            // Initialization
-            SimpleMatrix p_sigma = new SimpleMatrix(DIM, 1);
-            // double p_norm = 0;
-            SimpleMatrix p_c = new SimpleMatrix(DIM, 1);
-            // double h_sigma = 0;
-            // double[][] g = sampling(population_);
-            SimpleMatrix C = SimpleMatrix.identity(DIM);
-            SimpleMatrix m = new SimpleMatrix(DIM, 1);
-            double sigma = 3;
-            double chiN = Math.sqrt(DIM) * (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
-            
-            double[] best_score = new double[generation];
-            
-            for (int g = 0; g < generation; g++) {
-                // Sample new population of search points
-                SimpleMatrix[] x = new SimpleMatrix[lambda];
-                SimpleMatrix[] y = new SimpleMatrix[lambda];
-                SimpleMatrix[] z = new SimpleMatrix[lambda];
-                
-                SimpleMatrix B = new SimpleMatrix(DIM, DIM);
-                SimpleMatrix D = new SimpleMatrix(DIM, DIM);
-                evd_matrix(C, B, D);
-                
-                if (g == 0) {
-                	double[][] tmp = sampling(lambda);
-                	for (int k = 0; k < lambda; k++) {
-                		x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
-                	}
-                } else {
-	                for (int k = 0; k < lambda; k++) {
-	                    x[k] = new SimpleMatrix(DIM, 1);
-	                    y[k] = new SimpleMatrix(DIM, 1);
-	                    z[k] = new SimpleMatrix(DIM, 1);
-	                    for (int i = 0; i < DIM; i++) {
-	                        z[k].set(i, 0, rnd_.nextGaussian());
-	                        y[k] = B.mult(D).mult(z[k]);
-	                        x[k] = m.plus(sigma, y[k]);
-	                    }
-	                    //x[k].print();
-	                }
-                }
-                
-                // Selection and recombination
-                SimpleMatrix y_w;
-                SimpleMatrix m_bak = m.copy();
-                if (g == 0) {
-                	best_ = 0;
-                } else {
-                	best_ = best_score[g - 1];
-                }
-                CMA_sort(x, lambda);
-                
-                best_score[g] = best_;
-                m.set(0);
-                for (int i = 0; i < mu; i++) {
-                    //x[i].print();
-                    m = m.plus(w[i], x[i]);
-                    y[i] = x[i].minus(m_bak).divide(sigma);
-                }
-                y_w = m.minus(m_bak).divide(sigma);
-                
-                // Step-size control
-                SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
-                p_sigma = p_sigma.scale(1 - c_sigma).plus(C_nsqrt.mult(y_w).scale(Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
-                sigma = sigma * Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
-                
-                //Covariance matrix adaptation
-                int h_sigma;
-                if (p_sigma.normF() / Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2 / (DIM + 1)) * chiN)
-                    h_sigma = 1;
-                else
-                    h_sigma = 0;
-                double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
-                p_c = p_c.scale(1 - c_c).plus(y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
-                SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
-                for (int i = 0; i < mu; i++) {
-                    y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
-                }
-                //y_sqrsum.print();
-                C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).plus(c_mu, y_sqrsum);
-                
-                if (g >= 20 && best_score[g] - best_score[g - 20] < 1e-8) {
-                	break;
-                }
-            }
+		// Set parameters
+		// - Selection and Recombination
+		int generation = (int) (100 + 50 * Math.pow((DIM + 3), 2)
+				/ Math.sqrt(lambda));
+		int mu = lambda / 2; //
+		double mu_p = (double) lambda / 2; // mu'
+		double[] w = new double[mu]; // w
+		double[] w_p = new double[mu]; // w'
+		double sum = 0.0;
+		double endDiff = 1e-8;
+		for (int i = 0; i < mu; i++) {
+			w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
+			sum += w_p[i];
+		}
+		double sum_p = 0.0;
+		for (int i = 0; i < mu; i++) {
+			w[i] = w_p[i] / sum;
+			sum_p += Math.pow(w[i], 2);
+		}
+
+		// Set parameters
+		// - Step-size control
+		double mu_eff = 1 / sum_p;
+		double c_sigma = (mu_eff + 2) / (DIM + mu_eff + 5);
+		double d_sigma = 1 + 2
+				* Math.max(0, Math.sqrt((mu_eff - 1) / (DIM + 1)) - 1)
+				+ c_sigma;
+
+		// Set parameters
+		// - Covariance matrix adaptation
+		double c_c = (4 + mu_eff / DIM) / (DIM + 4 + 2 * mu_eff / DIM);
+		double c_1 = 2 / (Math.pow(DIM + 1.3, 2) + mu_eff);
+		double alpha_mu = 2;
+		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff)
+				/ (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
+
+		// double E_norm = Math.sqrt(DIM)
+		// * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
+
+		// Initialization
+		SimpleMatrix p_sigma = new SimpleMatrix(DIM, 1);
+		// double p_norm = 0;
+		SimpleMatrix p_c = new SimpleMatrix(DIM, 1);
+		// double h_sigma = 0;
+		// double[][] g = sampling(population_);
+		SimpleMatrix C = SimpleMatrix.identity(DIM);
+		SimpleMatrix m = new SimpleMatrix(DIM, 1);
+		double sigma = 3;
+		double chiN = Math.sqrt(DIM)
+				* (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
+
+		double[] best_score = new double[generation];
+
+		for (int g = 0; g < generation; g++) {
+			// Sample new population of search points
+			SimpleMatrix[] x = new SimpleMatrix[lambda];
+			SimpleMatrix[] y = new SimpleMatrix[lambda];
+			SimpleMatrix[] z = new SimpleMatrix[lambda];
+
+			SimpleMatrix B = new SimpleMatrix(DIM, DIM);
+			SimpleMatrix D = new SimpleMatrix(DIM, DIM);
+			evd_matrix(C, B, D);
+
+			if (g == 0) {
+				double[][] tmp = sampling(lambda);
+				for (int k = 0; k < lambda; k++) {
+					x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
+				}
+			} else {
+				for (int k = 0; k < lambda; k++) {
+					x[k] = new SimpleMatrix(DIM, 1);
+					y[k] = new SimpleMatrix(DIM, 1);
+					z[k] = new SimpleMatrix(DIM, 1);
+					for (int i = 0; i < DIM; i++) {
+						z[k].set(i, 0, rnd_.nextGaussian());
+						y[k] = B.mult(D).mult(z[k]);
+						x[k] = m.plus(sigma, y[k]);
+					}
+					// x[k].print();
+				}
+			}
+
+			// Selection and recombination
+			SimpleMatrix y_w;
+			SimpleMatrix m_bak = m.copy();
+			if (g == 0) {
+				best_ = 0;
+			} else {
+				best_ = best_score[g - 1];
+			}
+			CMA_sort(x, lambda);
+
+			best_score[g] = best_;
+			m.set(0);
+			for (int i = 0; i < mu; i++) {
+				// x[i].print();
+				m = m.plus(w[i], x[i]);
+				y[i] = x[i].minus(m_bak).divide(sigma);
+			}
+			y_w = m.minus(m_bak).divide(sigma);
+
+			// Step-size control
+			SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
+			p_sigma = p_sigma.scale(1 - c_sigma).plus(
+					C_nsqrt.mult(y_w).scale(
+							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
+			sigma = sigma
+					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
+
+			// Covariance matrix adaptation
+			int h_sigma;
+			if (p_sigma.normF()
+					/ Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2 / (DIM + 1))
+					* chiN)
+				h_sigma = 1;
+			else
+				h_sigma = 0;
+			double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
+			p_c = p_c.scale(1 - c_c).plus(
+					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
+			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
+			for (int i = 0; i < mu; i++) {
+				y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
+			}
+			// y_sqrsum.print();
+			C = C.scale(1 - c_1 - c_mu)
+					.plus(p_c.mult(p_c.transpose())
+							.plus(C.scale(delta_h_sigma)).scale(c_1))
+					.plus(c_mu, y_sqrsum);
+
+			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff) {
+				if (limit_ < 10000) {
+					endDiff = 0;
+				} else {
+					break;
+				}
+			}
+		}
 	}
-        
-        private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
-            //C.print();
-            SimpleEVD EVD_C = C.eig();
-            int n = EVD_C.getNumberOfEigenvalues();
-            for (int i = 0; i < n; i++) {
-                B.setColumn(i, 0, EVD_C.getEigenVector(i).getMatrix().getData());
-                D.set(i, i, EVD_C.getEigenvalue(i).getReal());
-            }
-        }
-        
-        @SuppressWarnings("unchecked")
-		private void CMA_sort(SimpleMatrix[] x, int lambda) {
-            
-            class fitComparator implements Comparator {
-                @Override
-                public final int compare(Object a, Object b) {
-                    double diff = ((SimpleMatrix)a).get(DIM, 0) - ((SimpleMatrix)b).get(DIM, 0);
-                    if (diff == 0)
-                        return 0;
-                    else if (diff < 0)
-                        return 1;
-                    else
-                        return -1;
-                }
-            }
-            
-            best_ = 0;
-            SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
-            for (int i = 0; i < lambda; i++) {
-                double[] gene = x[i].getMatrix().getData();
-                x_fit[i] = new SimpleMatrix(DIM + 1, 1);
-                x_fit[i].setColumn(0, 0, gene);
-                x_fit[i].set(DIM, 0, (Double) evaluation_.evaluate(gene));
-                if (x_fit[i].get(DIM, 0) > best_) {
-                	best_ = x_fit[i].get(DIM, 0);
-                }
-                limit_--;
-            }
-            Arrays.sort(x_fit, new fitComparator());
-            for (int i = 0; i < lambda; i++) {
-                x[i].setColumn(0, 0, x_fit[i].extractMatrix(0, DIM, 0, 1).getMatrix().getData());
-            }
-        }
-	
+
+	private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
+		// C.print();
+		SimpleEVD EVD_C = C.eig();
+		int n = EVD_C.getNumberOfEigenvalues();
+		for (int i = 0; i < n; i++) {
+			B.setColumn(i, 0, EVD_C.getEigenVector(i).getMatrix().getData());
+			D.set(i, i, EVD_C.getEigenvalue(i).getReal());
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void CMA_sort(SimpleMatrix[] x, int lambda) {
+
+		class fitComparator implements Comparator {
+			@Override
+			public final int compare(Object a, Object b) {
+				double diff = ((SimpleMatrix) a).get(DIM, 0)
+						- ((SimpleMatrix) b).get(DIM, 0);
+				if (diff == 0)
+					return 0;
+				else if (diff < 0)
+					return 1;
+				else
+					return -1;
+			}
+		}
+
+		best_ = 0;
+		SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
+		for (int i = 0; i < lambda; i++) {
+			double[] gene = x[i].getMatrix().getData();
+			x_fit[i] = new SimpleMatrix(DIM + 1, 1);
+			x_fit[i].setColumn(0, 0, gene);
+			x_fit[i].set(DIM, 0, (Double) evaluation_.evaluate(gene));
+			if (x_fit[i].get(DIM, 0) > best_) {
+				best_ = x_fit[i].get(DIM, 0);
+			}
+			limit_--;
+		}
+		Arrays.sort(x_fit, new fitComparator());
+		for (int i = 0; i < lambda; i++) {
+			x[i].setColumn(0, 0, x_fit[i].extractMatrix(0, DIM, 0, 1)
+					.getMatrix().getData());
+		}
+	}
+
 	// Differential Evolution
 	private void DE() {
 		// set parameters
@@ -655,7 +671,7 @@ public class player19 implements ContestSubmission {
 		int ns_1 = 1, ns_2 = 1, nf_1 = 1, nf_2 = 1;// strategy selection counter
 		double p_1 = 0.5, p_2 = 0.5;// strategy selection probability
 		int randi = 0;
-		int r1,r2,r3,r4,r5;// random index
+		int r1, r2, r3, r4, r5;// random index
 		int st = 1;// current strategy
 
 		double[][] g = neo_sampling(population);
@@ -785,7 +801,7 @@ public class player19 implements ContestSubmission {
 		int gen = 0;
 		double[] F = new double[population];
 		double K = 0.5;
-		//double[] K = new double[population];
+		// double[] K = new double[population];
 
 		// setting memory
 		int[][] ns_mem = new int[lp][num_st];
@@ -797,11 +813,11 @@ public class player19 implements ContestSubmission {
 		int[] ns = { 1, 1, 1, 1 };// strategy selection counter
 		int[] nf = { 1, 1, 1, 1 };// strategy selection counter
 		double[] p = { 0.25, 0.25, 0.25, 0.25 };// strategy
-										// selection
-										// probability
+		// selection
+		// probability
 		double[] s = new double[num_st];
 		double s_sum;
-		
+
 		int randi = 0;
 		int r1, r2, r3, r4, r5;// random index
 		int st = 1;// current strategy
@@ -820,13 +836,13 @@ public class player19 implements ContestSubmission {
 		double[] y = new double[DIM];
 		double score_neo = 0;
 		double[] gen_score = new double[generation];
-		for(int i = 0; i < generation;i++){
+		for (int i = 0; i < generation; i++) {
 			gen_score[i] = best;
 		}
 		// start evolution
 		for (int i = 0; i < generation; i++) {
-			
-			if(i >= lp){
+
+			if (i >= lp) {
 				for (int j = 0; j < num_st; j++) {
 					CRsuc[j] = 0;
 					CRsum[j] = 0;
@@ -839,7 +855,7 @@ public class player19 implements ContestSubmission {
 						nf[j] += nf_mem[k][j];
 					}
 				}
-				
+
 				s_sum = 0;
 				for (int k = 0; k < num_st; k++) {
 					s[k] = (double) ns[k] / (ns[k] + nf[k]) + sigma;
@@ -849,34 +865,36 @@ public class player19 implements ContestSubmission {
 				for (int k = 0; k < num_st; k++) {
 					p[k] = s[k] / s_sum;
 					CRm[k] = CRsum[k] / CRsuc[k];
-					ns_mem[i%lp][k] = 0;
-					nf_mem[i%lp][k] = 0;
-					CR_suc_mem[i%lp][k] = 1;
-					CR_mem[i%lp][k] = 0.5;
+					ns_mem[i % lp][k] = 0;
+					nf_mem[i % lp][k] = 0;
+					CR_suc_mem[i % lp][k] = 1;
+					CR_mem[i % lp][k] = 0.5;
 				}
-				
-				for(int j = 0; j < population;j++){
+
+				for (int j = 0; j < population; j++) {
 					for (int k = 0; k < num_st; k++) {
-						//CR[j][k] = CRm[k] + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
+						// CR[j][k] = CRm[k] + Math.tan(Math.PI *
+						// (rnd_.nextDouble() - 0.5)) * CRd;
 						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
-						//CR[j][k] = Math.max(0.1, CR[j][k]);
+						// CR[j][k] = Math.max(0.1, CR[j][k]);
 					}
 				}
-			}else{
-				for(int j = 0; j < population;j++){
+			} else {
+				for (int j = 0; j < population; j++) {
 					for (int k = 0; k < num_st; k++) {
-						//CR[j][k] = CRm[k] + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
+						// CR[j][k] = CRm[k] + Math.tan(Math.PI *
+						// (rnd_.nextDouble() - 0.5)) * CRd;
 						CR[j][k] = CRm[k] + rnd_.nextGaussian() * CRd;
 						CR[j][k] = Math.max(0.1, CR[j][k]);
-						ns_mem[i%lp][k] = 0;
-						nf_mem[i%lp][k] = 0;
-						CR_suc_mem[i%lp][k] = 1;
-						CR_mem[i%lp][k] = 0.5;
+						ns_mem[i % lp][k] = 0;
+						nf_mem[i % lp][k] = 0;
+						CR_suc_mem[i % lp][k] = 1;
+						CR_mem[i % lp][k] = 0.5;
 					}
 				}
 			}
 			K = rnd_.nextDouble();
-			
+
 			for (int j = 0; j < population; j++) {
 				// set F, location decided
 				F[j] = Fm + rnd_.nextGaussian() * Fd;
@@ -922,8 +940,8 @@ public class player19 implements ContestSubmission {
 								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k]);
 							} else if (st == 2) {
 								y[k] = g[j][k] + F[j] * (bestX[k] - g[j][k])
-										+ F[j] * (g[r1][k] - g[r2][k])
-										 + F[j]* (g[r3][k] - g[r4][k]);
+										+ F[j] * (g[r1][k] - g[r2][k]) + F[j]
+										* (g[r3][k] - g[r4][k]);
 							} else {
 								y[k] = g[r1][k] + F[j] * (g[r2][k] - g[r3][k])
 										+ F[j] * (g[r4][k] - g[r5][k]);
@@ -969,13 +987,13 @@ public class player19 implements ContestSubmission {
 	// Differential Evolution
 	private void Cauchy_DE() {
 		// set parameters
-		
+
 		int population = 100;
 		int generation = limit_ / population - 1;
 		double[] CR = new double[population];
-		double[] F = new double[population]; 
+		double[] F = new double[population];
 		double[] CR_mem = new double[population];
-		double[] F_mem = new double[population]; 
+		double[] F_mem = new double[population];
 		double F_avg;
 		double CR_avg;
 		double F_sum;
@@ -1033,14 +1051,14 @@ public class player19 implements ContestSubmission {
 					counter++;
 				}
 			}
-			if(counter>0){
+			if (counter > 0) {
 				F_sum = 0;
 				CR_sum = 0;
-				for(int k = 0 ; k < counter;k++){
-					F_sum+=F_mem[k];
-					CR_sum+=CR_mem[k];
+				for (int k = 0; k < counter; k++) {
+					F_sum += F_mem[k];
+					CR_sum += CR_mem[k];
 				}
-				F_avg = F_sum/counter;
+				F_avg = F_sum / counter;
 				CR_avg = CR_sum / counter;
 				for (int j = 0; j < population; j++) {
 					F[j] = Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * 0.1
@@ -1053,10 +1071,10 @@ public class player19 implements ContestSubmission {
 					CR[j] = Math.min(CR[j], 1);
 				}
 			}
-			
+
 		}
 	}
-	
+
 	// 2 stages self-adapted DE
 	private void SSaDE() {
 		// set parameters
@@ -1152,194 +1170,192 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
-	
-	//TODO
-		// Mean-Variance Mapping Optimization
-		@SuppressWarnings("unused")
-		private void MVMO() {
+	// TODO
+	// Mean-Variance Mapping Optimization
+	@SuppressWarnings("unused")
+	private void MVMO() {
 
-			// set parameter
-			int lambda = 5;
-			double gamma = 0;
-			double f_s_ini = 0.1;
-			double f_s_final = 20;
-			double f_s = f_s_ini;
-			double f_s_star = f_s;
-			double d_0 = 0.25;
-			double m_ini = DIM / 6;
-			double m_final = DIM / 2;
-			double alpha_LS_min = 0.23;
+		// set parameter
+		int lambda = 5;
+		double gamma = 0;
+		double f_s_ini = 0.1;
+		double f_s_final = 20;
+		double f_s = f_s_ini;
+		double f_s_star = f_s;
+		double d_0 = 0.25;
+		double m_ini = DIM / 6;
+		double m_final = DIM / 2;
+		double alpha_LS_min = 0.23;
 
-			// initial
-			double[] score = new double[lambda];
-			double[] mean = new double[DIM];
-			double[] shape = new double[DIM];
-			double[] d_factor = new double[DIM];
-			int m, m_star, i_max = limit_ / 2;
-			double alpha;
-			double[][] archive = new double[lambda][DIM + 1];
+		// initial
+		double[] score = new double[lambda];
+		double[] mean = new double[DIM];
+		double[] shape = new double[DIM];
+		double[] d_factor = new double[DIM];
+		int m, m_star, i_max = limit_ / 2;
+		double alpha;
+		double[][] archive = new double[lambda][DIM + 1];
 
-			// avg, si, di, si1, si2
-			double[][] param = new double[5][DIM];
-			
-			double score_neo = 0;
-			double[] x = new double[DIM];
-			double[][] first = neo_sampling(lambda);
-			double h_x, h0, h1, x_star;
+		// avg, si, di, si1, si2
+		double[][] param = new double[5][DIM];
 
-			for (int i = 0; i < lambda; i++) {
-				archive[i] = Arrays.copyOf(normalize(first[i]), DIM + 1);
-				archive[i][DIM] = (Double) evaluation_.evaluate(first[i]);
+		double score_neo = 0;
+		double[] x = new double[DIM];
+		double[][] first = neo_sampling(lambda);
+		double h_x, h0, h1, x_star;
+
+		for (int i = 0; i < lambda; i++) {
+			archive[i] = Arrays.copyOf(normalize(first[i]), DIM + 1);
+			archive[i][DIM] = (Double) evaluation_.evaluate(first[i]);
+			limit_--;
+		}
+		Arrays.sort(archive, new java.util.Comparator<double[]>() {
+			public int compare(double[] a, double[] b) {
+				return Double.compare(b[DIM], a[DIM]);
+			}
+		});
+
+		for (int i = 0; i < DIM; i++) {
+			param[2][i] = 1;
+		}
+
+		int i = 0;
+		while (i < i_max) {
+
+			alpha = i / i_max;
+
+			if (rnd_.nextDouble() < gamma) {
+				score_neo = -100000;
+			} else {
+				score_neo = (Double) evaluation_.evaluate(denormalize(x));
 				limit_--;
+				i++;
 			}
-			Arrays.sort(archive, new java.util.Comparator<double[]>() {
-				public int compare(double[] a, double[] b) {
-					return Double.compare(b[DIM], a[DIM]);
-				}
-			});
 
-			for(int i = 0;i<DIM;i++){
-				param[2][i] = 1;
-			}
-			
-			int i = 0;
-			while (i < i_max) {
-				
-				alpha = i / i_max;
-				
-				if (rnd_.nextDouble() < gamma) {
-					score_neo = -100000;
-				} else {
-					score_neo = (Double) evaluation_.evaluate(denormalize(x));
-					limit_--;
-					i++;
-				}
+			// update archive
+			if (score_neo > archive[lambda - 1][DIM]) {
+				archive[lambda - 1] = Arrays.copyOf(x, DIM + 1);
+				archive[lambda - 1][DIM] = score_neo;
+				Arrays.sort(archive, new java.util.Comparator<double[]>() {
+					public int compare(double[] a, double[] b) {
+						return Double.compare(b[DIM], a[DIM]);
+					}
+				});
+				for (int j = 0; j < DIM; j++) {
+					double x_sum = 0, x_var = 0;
+					for (int k = 0; k < lambda; k++) {
+						x_sum += archive[k][j];
+					}
+					param[0][j] = x_sum / lambda;
 
-				// update archive
-				if (score_neo > archive[lambda - 1][DIM]) {
-					archive[lambda - 1] = Arrays.copyOf(x, DIM + 1);
-					archive[lambda - 1][DIM] = score_neo;
-					Arrays.sort(archive, new java.util.Comparator<double[]>() {
-						public int compare(double[] a, double[] b) {
-							return Double.compare(b[DIM], a[DIM]);
-						}
-					});
-					for (int j = 0; j < DIM; j++) {
-						double x_sum = 0, x_var = 0;
-						for (int k = 0; k < lambda; k++) {
-							x_sum += archive[k][j];
-						}
-						param[0][j] = x_sum / lambda;
+					for (int k = 0; k < lambda; k++) {
+						x_var += Math.pow(archive[k][j] - param[0][j], 2);
+					}
+					param[1][j] = -Math.log((x_var + 0.0000001) / lambda) * f_s;// different
+																				// form
+																				// orig
+					if (Double.isInfinite(param[1][j])) {
+						param[1][j] = 20;
+					}
 
-						for (int k = 0; k < lambda; k++) {
-							x_var += Math.pow(archive[k][j] - param[0][j], 2);
+					param[3][j] = param[1][j];// si1
+					param[4][j] = param[1][j];// si2
+					if (param[1][j] > 0) {
+						double delta_d = (1 + d_0) + 2 * d_0
+								* (rnd_.nextDouble() - 0.5);
+						if (param[1][j] > param[2][j]) {
+							param[2][j] = param[2][j] * delta_d;
+						} else {
+							param[2][j] = param[2][j] / delta_d;
 						}
-						param[1][j] = -Math.log((x_var + 0.0000001)/ lambda) * f_s;//different form orig
-						if(Double.isInfinite(param[1][j])){
-							param[1][j] = 20;
+						if (rnd_.nextDouble() > 0.5) {
+							param[3][j] = param[1][j];
+							param[4][j] = param[2][j];
+						} else {
+							param[3][j] = param[2][j];
+							param[4][j] = param[1][j];
 						}
-							
-						
-						param[3][j] = param[1][j];// si1
-						param[4][j] = param[1][j];// si2
-						if (param[1][j] > 0) {
-							double delta_d = (1 + d_0) + 2 * d_0
-									* (rnd_.nextDouble() - 0.5);
-							if (param[1][j] > param[2][j]) {
-								param[2][j] = param[2][j] * delta_d;
-							} else {
-								param[2][j] = param[2][j] / delta_d;
-							}
-							if (rnd_.nextDouble() > 0.5) {
-								param[3][j] = param[1][j];
-								param[4][j] = param[2][j];
-							} else {
-								param[3][j] = param[2][j];
-								param[4][j] = param[1][j];
-							}
-						}
-
 					}
 
 				}
 
-				// gen offspring
-				m_star = (int) Math.round(m_ini - Math.pow(alpha, 2)
-						* (m_ini - m_final));
-				m = (int) Math.round(m_final + rnd_.nextDouble()
-						* (m_star - m_final));
-
-				int[] index = getRandomPermutation(DIM);
-				
-				for (int j = 0; j < m; j++) {
-					int k = index[j];
-					x_star = rnd_.nextDouble();
-					h_x = MVMO_h(param[0][k], param[3][k], param[4][k], x_star);
-					h0 = MVMO_h(param[0][k], param[3][k], param[4][k], 0);
-					h1 = MVMO_h(param[0][k], param[3][k], param[4][k], 1);
-					x[k] = h_x + (1 - h1 + h0) * x_star - h0;
-				}
-				for (int j = m; j < DIM; j++) {
-					int k = index[j];
-					x[k] = archive[0][k];
-				}
-
-				f_s_star = f_s_ini + Math.pow(alpha, 2) * (f_s_final - f_s_ini);
-				f_s = f_s_star * (1 + rnd_.nextDouble());
-
 			}
 
-		}
-		
-		private double[] normalize(double[] a) {
-			int l = Array.getLength(a);
-			double[] b = new double[l];
-			for (int i = 0; i < l; i++) {
-				b[i] = (a[i] + 5) / 10;
+			// gen offspring
+			m_star = (int) Math.round(m_ini - Math.pow(alpha, 2)
+					* (m_ini - m_final));
+			m = (int) Math.round(m_final + rnd_.nextDouble()
+					* (m_star - m_final));
+
+			int[] index = getRandomPermutation(DIM);
+
+			for (int j = 0; j < m; j++) {
+				int k = index[j];
+				x_star = rnd_.nextDouble();
+				h_x = MVMO_h(param[0][k], param[3][k], param[4][k], x_star);
+				h0 = MVMO_h(param[0][k], param[3][k], param[4][k], 0);
+				h1 = MVMO_h(param[0][k], param[3][k], param[4][k], 1);
+				x[k] = h_x + (1 - h1 + h0) * x_star - h0;
 			}
-			return b;
-		}
-		
-		private double[] denormalize(double[] a) {
-			int l = Array.getLength(a);
-			double[] b = new double[l];
-			for (int i = 0; i < l; i++) {
-				b[i] = a[i] * 10 - 5;
+			for (int j = m; j < DIM; j++) {
+				int k = index[j];
+				x[k] = archive[0][k];
 			}
-			return b;
-		}
-		
-		private double MVMO_h(double avg, double s1, double s2, double x) {
-			return avg * (1 - Math.exp(-x * s1)) + (1 - avg)
-					* Math.exp(-(1 - x) * s2);
+
+			f_s_star = f_s_ini + Math.pow(alpha, 2) * (f_s_final - f_s_ini);
+			f_s = f_s_star * (1 + rnd_.nextDouble());
+
 		}
 
-		private int[] getRandomPermutation(int length) {
+	}
 
-			// initialize array and fill it with {0,1,2...}
-			int[] array = new int[length];
-			for (int i = 0; i < array.length; i++)
-				array[i] = i;
-
-			for (int i = 0; i < length; i++) {
-
-				// randomly chosen position in array whose element
-				// will be swapped with the element in position i
-				// note that when i = 0, any position can chosen (0 thru length-1)
-				// when i = 1, only positions 1 through length -1
-				// NOTE: r is an instance of java.util.Random
-				int ran = i + rnd_.nextInt(length - i);
-
-				// perform swap
-				int temp = array[i];
-				array[i] = array[ran];
-				array[ran] = temp;
-			}
-			return array;
+	private double[] normalize(double[] a) {
+		int l = Array.getLength(a);
+		double[] b = new double[l];
+		for (int i = 0; i < l; i++) {
+			b[i] = (a[i] + 5) / 10;
 		}
+		return b;
+	}
 
-	
-	
+	private double[] denormalize(double[] a) {
+		int l = Array.getLength(a);
+		double[] b = new double[l];
+		for (int i = 0; i < l; i++) {
+			b[i] = a[i] * 10 - 5;
+		}
+		return b;
+	}
+
+	private double MVMO_h(double avg, double s1, double s2, double x) {
+		return avg * (1 - Math.exp(-x * s1)) + (1 - avg)
+				* Math.exp(-(1 - x) * s2);
+	}
+
+	private int[] getRandomPermutation(int length) {
+
+		// initialize array and fill it with {0,1,2...}
+		int[] array = new int[length];
+		for (int i = 0; i < array.length; i++)
+			array[i] = i;
+
+		for (int i = 0; i < length; i++) {
+
+			// randomly chosen position in array whose element
+			// will be swapped with the element in position i
+			// note that when i = 0, any position can chosen (0 thru length-1)
+			// when i = 1, only positions 1 through length -1
+			// NOTE: r is an instance of java.util.Random
+			int ran = i + rnd_.nextInt(length - i);
+
+			// perform swap
+			int temp = array[i];
+			array[i] = array[ran];
+			array[ran] = temp;
+		}
+		return array;
+	}
+
 	// partical swarm optimization
 	private void PSO() {
 		// set parameters
@@ -1486,7 +1502,7 @@ public class player19 implements ContestSubmission {
 	// new sampling method
 	private double[][] opp_sampling(int population) {
 		double[][] g = new double[population][DIM];
-		int half = (int)Math.round((double)population / 2);
+		int half = (int) Math.round((double) population / 2);
 		for (int i = 0; i < half; i++) {
 			for (int j = 0; j < DIM; j++) {
 				g[i][j] = rnd_.nextDouble() * 10 - 5;
@@ -1499,10 +1515,10 @@ public class player19 implements ContestSubmission {
 		}
 		return g;
 	}
-	
+
 	private double[][] neo_sampling(int population) {
 		double[][] g = new double[population][DIM];
-		int half = (int)Math.round((double)population / 2);
+		int half = (int) Math.round((double) population / 2);
 		for (int i = 0; i < half; i++) {
 			for (int j = 0; j < DIM; j++) {
 				g[i][j] = rnd_.nextDouble() * 10 - 5;
@@ -1511,9 +1527,9 @@ public class player19 implements ContestSubmission {
 		for (int i = half; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
 				if (g[i - population / 2][j] > 0) {
-					g[i][j] = g[i - population / 2][j]/3 - 10 / 3;
+					g[i][j] = g[i - population / 2][j] / 3 - 10 / 3;
 				} else if (g[i - population / 2][j] < 0) {
-					g[i][j] = g[i - population / 2][j]/3 + 10 / 3;
+					g[i][j] = g[i - population / 2][j] / 3 + 10 / 3;
 				} else {
 					g[i][j] = rnd_.nextDouble() * 10 - 5;
 				}
@@ -1521,7 +1537,7 @@ public class player19 implements ContestSubmission {
 		}
 		return g;
 	}
-	
+
 	public static void main(String[] args) {
 	}
 }
