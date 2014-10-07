@@ -405,7 +405,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 51;
+		int lambda = 50;
 		while (limit_ > (int)lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda);
 			//lambda = lambda * 2;
@@ -471,7 +471,7 @@ public class player19 implements ContestSubmission {
                 evd_matrix(C, B, D);
                 
                 if (g == 0) {
-                	double[][] tmp = neo_sampling(lambda);
+                	double[][] tmp = sampling(lambda);
                 	for (int k = 0; k < lambda; k++) {
                 		x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
                 	}
@@ -528,7 +528,7 @@ public class player19 implements ContestSubmission {
                 //y_sqrsum.print();
                 C = C.scale(1 - c_1 - c_mu).plus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)).scale(c_1)).plus(c_mu, y_sqrsum);
                 
-                if (g > 30 && best_score[g] - best_score[g - 20] < 1e-8) {
+                if (g >= 20 && best_score[g] - best_score[g - 20] < 1e-8) {
                 	break;
                 }
             }
