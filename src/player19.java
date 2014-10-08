@@ -78,7 +78,8 @@ public class player19 implements ContestSubmission {
 		// TODO
 		// SimpleMatrix test = new SimpleMatrix(DIM, 1);
 		if (!mm)
-			golden();
+			//golden();
+			SAA();
 		else if (rg)
 			SaDE();
 		else {
@@ -1539,7 +1540,110 @@ public class player19 implements ContestSubmission {
 		}
 		return g;
 	}
+	
+	private void SAA()
+	{
+		double[] saa_test = new double[10];
+		Random r = new Random();
+		for(int i = 0;i<10;i++)
+		{
+			saa_test[i] = r.nextDouble()*10 -5;
+			//System.out.println(saa_test[i]);
+		}
+		sa(saa_test);
+	}
+	
+	public void sa(double[] x)
+	{
+		int markovlength = 150;
+		double decay_scale = 0.95;
+		double step_factor = 0.2;
+		double temperature = 500;
+		double tolerance = 1e-8;
+		double[] pre,next,prebest,best;
+		double acceptpoints = 0.0;
+		int i;
+		double pre_s,next_s,best_s;
+		Random rnd_ = new Random();
+		
+		pre = new double[10];
+		next = new double[10];
+		prebest = new double[10];
+		best = new double[10];
+		
 
+		for(i=0;i<10;i++){
+			pre[i] = - x[i];
+			prebest[i] = pre[i];
+			best[i] = pre[i];
+			//System.out.println(max[i]);
+		}
+		
+		do
+		{
+			temperature = temperature*decay_scale;
+			acceptpoints = 0.0;
+			
+			for(int trials=0;trials<markovlength;trials++)
+			{
+				//System.out.println("trials is: " + trials);
+				do
+				{
+					for(i=0;i<10;i++)
+					{
+						next[i] = pre[i] + step_factor * 5 * (rnd_.nextDouble() - 0.5);
+						//System.out.println("next" + i +" is " + next[i]);
+					}
+				}while(!within_boundary(next));
+				
+				next_s = (double)evaluation_.evaluate(next);
+				best_s = (double)evaluation_.evaluate(best);
+				pre_s = (double)evaluation_.evaluate(pre);
+				
+				if(next_s > best_s)
+				{
+					for(i=0;i<10;i++)
+					{
+						prebest[i] = best[i];
+						best[i] = next[i];
+					}
+				}
+				
+				if(pre_s - next_s < 0 )
+				{
+					for(i=0;i<10;i++)
+					{
+						pre[i] = next[i];
+					}
+					acceptpoints++;
+				}
+				else {
+					double change =  (next_s - pre_s);
+					//System.out.println(change + " " + (double)evaluation_.evaluate(next) + " " + (double)evaluation_.evaluate(pre));
+					if(Math.exp(change)/temperature > rnd_.nextDouble())
+					{
+						for(i = 0;i<10;i++)
+						{
+							pre[i] = next[i];
+						}
+						acceptpoints++;
+					}
+				}
+			}
+		} while(Math.abs((double)evaluation_.evaluate(best)) - Math.abs((double)evaluation_.evaluate(pre)) > tolerance);
+	}
+	
+	public boolean within_boundary(double[] x)
+	{
+		for(int i=0;i<10;i++)
+		{
+			if(x[i]<=-5 || x[i]>=5)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 	public static void main(String[] args) {
 	}
 }
