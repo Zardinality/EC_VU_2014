@@ -538,13 +538,10 @@ public class player19 implements ContestSubmission {
 							.plus(C.scale(delta_h_sigma)).scale(c_1))
 					.plus(c_mu, y_sqrsum);
 
-			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff
-					&& limit_ >= (int) lambda
-					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff) {
 					break;
 			}
-			if (g + 1 >= generation && limit_ >= (int) lambda
-					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))){
+			if (g + 1 >= generation){
 				break;
 			}
 		}
