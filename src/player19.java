@@ -399,7 +399,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 50;
+		int lambda = 55;
 		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda);
@@ -1528,10 +1528,10 @@ public class player19 implements ContestSubmission {
 		}
 		for (int i = half; i < population; i++) {
 			for (int j = 0; j < DIM; j++) {
-				if (g[i - population / 2][j] > 0) {
-					g[i][j] = g[i - population / 2][j] / 3 - 10 / 3;
-				} else if (g[i - population / 2][j] < 0) {
-					g[i][j] = g[i - population / 2][j] / 3 + 10 / 3;
+				if (g[i - half][j] > 0) {
+					g[i][j] = g[i - half][j] / 3 - 10 / 3;
+				} else if (g[i - half][j] < 0) {
+					g[i][j] = g[i - half][j] / 3 + 10 / 3;
 				} else {
 					g[i][j] = rnd_.nextDouble() * 10 - 5;
 				}
