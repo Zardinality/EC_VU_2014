@@ -1574,8 +1574,8 @@ public class player19 implements ContestSubmission {
 			saa_test[i] = rnd_.nextDouble() * 10 - 5;
 			// System.out.println(saa_test[i]);
 		}
-		//sa(saa_test);
-		ls(saa_test,0.1,150);
+		sa(saa_test);
+		//ls(saa_test,0.1,150);
 		saa_test[0] = 0;
 	}
 	
@@ -1612,8 +1612,10 @@ public class player19 implements ContestSubmission {
 		return g;
 	}
 	
-	private void sa(double[] x) {
-		int markovlength = 150;
+
+	public void sa(double[] x)
+	{
+		int markovlength = 300;
 		double decay_scale = 0.95;
 		double step_factor = 0.2;
 		double temperature = 500;
@@ -1621,7 +1623,7 @@ public class player19 implements ContestSubmission {
 		double[] pre, next, prebest, best;
 		double acceptpoints = 0.0;
 		int i;
-		double pre_s, next_s, best_s;
+		double pre_s = -999,next_s = -999,best_s = -999, prebest_s = -999;
 		Random rnd_ = new Random();
 
 		pre = new double[10];
@@ -1648,23 +1650,30 @@ public class player19 implements ContestSubmission {
 								* (rnd_.nextDouble() - 0.5);
 						// System.out.println("next" + i +" is " + next[i]);
 					}
-				} while (!within_boundary(next));
 
-				next_s = (double) evaluation_.evaluate(next);
-				best_s = (double) evaluation_.evaluate(best);
-				pre_s = (double) evaluation_.evaluate(pre);
+				}while(!within_boundary(next));
+				
+				next_s = (double)evaluation_.evaluate(next);
+				//best_s = (double)evaluation_.evaluate(best);
+				//pre_s = (double)evaluation_.evaluate(pre);
+				
+				if(next_s > best_s)
+				{
+					for(i=0;i<10;i++)
+					{
 
-				if (next_s > best_s) {
-					for (i = 0; i < 10; i++) {
 						prebest[i] = best[i];
 						best[i] = next[i];
 					}
+					prebest_s = best_s;
+					best_s = next_s;
 				}
 
 				if (pre_s - next_s < 0) {
 					for (i = 0; i < 10; i++) {
 						pre[i] = next[i];
 					}
+					pre_s = next_s;
 					acceptpoints++;
 				} else {
 					double change = (next_s - pre_s);
@@ -1675,12 +1684,14 @@ public class player19 implements ContestSubmission {
 						for (i = 0; i < 10; i++) {
 							pre[i] = next[i];
 						}
+						pre_s = next_s;
 						acceptpoints++;
 					}
 				}
 			}
-		} while (Math.abs((double) evaluation_.evaluate(best))
-				- Math.abs((double) evaluation_.evaluate(pre)) > tolerance);
+
+		} while(Math.abs(best_s) - Math.abs(pre_s) > tolerance);
+
 	}
 
 	private boolean within_boundary(double[] x) {
