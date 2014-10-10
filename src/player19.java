@@ -401,12 +401,14 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 10;
-		double sigma = 3;
+		int lambda_default = 40;
+		int lambda = lambda_default;
+		double sigma_default = 2;
+		double sigma = sigma_default;
 		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
-			CMA_ES(lambda,sigma);
-			lambda = (int)Math.round(lambda * 1.1);
+			CMA_ES(lambda, sigma);
+			//lambda = (int) Math.round(lambda * 1.1);
 		}
 	}
 
