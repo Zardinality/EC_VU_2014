@@ -422,7 +422,7 @@ public class player19 implements ContestSubmission {
 		double[] w = new double[mu]; // w
 		double[] w_p = new double[mu]; // w'
 		double sum = 0.0;
-		double endDiff = 1e-10;
+		double endDiff = 1e-8;
 		for (int i = 0; i < mu; i++) {
 			w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
 			sum += w_p[i];
