@@ -253,12 +253,12 @@ public class player19 implements ContestSubmission {
 	// golden evolution
 	private void golden() {
 		double[] g = new double[DIM];
-		int pop = limit_ / 5 - 1;// population_/2 - 1;
+		int pop = limit_ - 1;// population_/2 - 1;
 		for (int i = 0; i < DIM; i++)
 			g[i] = gd_trial(i, (pop) / DIM);
 		pop = limit_ - limit_ / 5 - 1;
-		for (int i = 0; i < DIM; i++)
-			g[i] = gd_trial(i, (pop) / DIM);
+		//for (int i = 0; i < DIM; i++)
+		//	g[i] = gd_trial(i, (pop) / DIM);
 		// pop = 500;
 		// for (int i = 0; i < DIM; i++)
 		// g[i] = gd_trial(i, (pop) / DIM);
@@ -332,6 +332,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	// for mm seperable functions(not in those 3)
+	@SuppressWarnings("unused")
 	private double trialRg(int dim, int population) {
 		int i, j, k;
 		double best = 0;
@@ -392,22 +393,24 @@ public class player19 implements ContestSubmission {
 	}
 
 	// benchmark score
+	@SuppressWarnings("unused")
 	private void Rnd() {
-		double[][] g = sampling(population_);
-		for (int i = 0; i < population_; i++)
+		double[][] g = sampling(limit_);
+		for (int i = 0; i < limit_; i++)
 			evaluation_.evaluate(g[i]);
 	}
 
 	private void CMA_ES_RS() {
-		int lambda = 50;
-		while (limit_ > (int) lambda
+		int lambda = 10;
+		double sigma = 3;
+		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
-			CMA_ES(lambda);
-			// lambda = lambda * 2;
+			CMA_ES(lambda,sigma);
+			lambda = (int)Math.round(lambda * 1.1);
 		}
 	}
 
-	private void CMA_ES(int lambda) {
+	private void CMA_ES(int lambda, double sigma) {
 		// Set parameters
 		// - Selection and Recombination
 		int generation = (int) (100 + 50 * Math.pow((DIM + 3), 2)
@@ -417,7 +420,7 @@ public class player19 implements ContestSubmission {
 		double[] w = new double[mu]; // w
 		double[] w_p = new double[mu]; // w'
 		double sum = 0.0;
-		double endDiff = 1e-8;
+		double endDiff = 1e-10;
 		for (int i = 0; i < mu; i++) {
 			w_p[i] = Math.log(mu_p + 0.5) - Math.log(i + 1);
 			sum += w_p[i];
@@ -455,11 +458,10 @@ public class player19 implements ContestSubmission {
 		// double[][] g = sampling(population_);
 		SimpleMatrix C = SimpleMatrix.identity(DIM);
 		SimpleMatrix m = new SimpleMatrix(DIM, 1);
-		double sigma = 3;
 		double chiN = Math.sqrt(DIM)
 				* (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
 
-		double[] best_score = new double[generation];
+		double[] best_score = new double[2 * generation];
 
 		for (int g = 0;; g++) {
 			// Sample new population of search points
@@ -477,16 +479,16 @@ public class player19 implements ContestSubmission {
 					x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
 				}
 			} else {
+				
 				for (int k = 0; k < lambda; k++) {
 					x[k] = new SimpleMatrix(DIM, 1);
 					y[k] = new SimpleMatrix(DIM, 1);
 					z[k] = new SimpleMatrix(DIM, 1);
 					for (int i = 0; i < DIM; i++) {
 						z[k].set(i, 0, rnd_.nextGaussian());
-						y[k] = B.mult(D).mult(z[k]);
-						x[k] = m.plus(sigma, y[k]);
 					}
-					// x[k].print();
+					y[k] = B.mult(D).mult(z[k]);
+					x[k] = m.plus(sigma, y[k]);
 				}
 			}
 
@@ -502,13 +504,15 @@ public class player19 implements ContestSubmission {
 
 			best_score[g] = best_;
 			m.set(0);
+
 			for (int i = 0; i < mu; i++) {
 				// x[i].print();
 				m = m.plus(w[i], x[i]);
 				y[i] = x[i].minus(m_bak).divide(sigma);
 			}
+			
 			y_w = m.minus(m_bak).divide(sigma);
-
+			
 			// Step-size control
 			SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
 			p_sigma = p_sigma.scale(1 - c_sigma).plus(
@@ -526,6 +530,7 @@ public class player19 implements ContestSubmission {
 			else
 				h_sigma = 0;
 			double delta_h_sigma = (1 - h_sigma) * c_c * (2 - c_c);
+			
 			p_c = p_c.scale(1 - c_c).plus(
 					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
@@ -533,15 +538,21 @@ public class player19 implements ContestSubmission {
 				y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
 			}
 			// y_sqrsum.print();
+			
 			C = C.scale(1 - c_1 - c_mu)
 					.plus(p_c.mult(p_c.transpose())
 							.plus(C.scale(delta_h_sigma)).scale(c_1))
 					.plus(c_mu, y_sqrsum);
-
-			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff) {
+			
+			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff
+					&& limit_ * 2 >= (int) lambda
+					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 					break;
 			}
 			if (g + 1 >= generation){
+				break;
+			}
+			if(limit_ < lambda){
 				break;
 			}
 		}
@@ -549,6 +560,7 @@ public class player19 implements ContestSubmission {
 
 	private void evd_matrix(SimpleMatrix C, SimpleMatrix B, SimpleMatrix D) {
 		// C.print();
+		
 		SimpleEVD EVD_C = C.eig();
 		int n = EVD_C.getNumberOfEigenvalues();
 		for (int i = 0; i < n; i++) {
@@ -594,6 +606,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	// Differential Evolution
+	@SuppressWarnings("unused")
 	private void DE() {
 		// set parameters
 		double CR = 0.5;// also try 0.9 and 1
@@ -777,8 +790,8 @@ public class player19 implements ContestSubmission {
 		}
 	}
 
-	// TODO
 	// neo Self-adaptive DE
+	@SuppressWarnings("unused")
 	private void NSaDE() {
 		// set parameters
 		double[][] CR;
@@ -984,6 +997,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	// Differential Evolution
+	@SuppressWarnings("unused")
 	private void Cauchy_DE() {
 		// set parameters
 
@@ -1075,6 +1089,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	// 2 stages self-adapted DE
+	@SuppressWarnings("unused")
 	private void SSaDE() {
 		// set parameters
 		double F_l = 0.1;
@@ -1175,8 +1190,8 @@ public class player19 implements ContestSubmission {
 	private void MVMO() {
 
 		// set parameter
-		int lambda = 5;
-		double gamma = 0;
+		int lambda = 20;
+		double gamma = 1;
 		double f_s_ini = 0.1;
 		double f_s_final = 20;
 		double f_s = f_s_ini;
@@ -1185,13 +1200,19 @@ public class player19 implements ContestSubmission {
 		double m_ini = DIM / 6;
 		double m_final = DIM / 2;
 		double alpha_LS_min = 0.23;
+		double s_d = 75;
+		double k_d = 0.0505 / DIM + 1.0;
+		int lsTrail = 200;
+		int i_max = Math.min(100000, limit_-100);//limit_ - 10;
 
 		// initial
+		double x_sum = 0, x_var = 0;
 		double[] score = new double[lambda];
 		double[] mean = new double[DIM];
 		double[] shape = new double[DIM];
 		double[] d_factor = new double[DIM];
-		int m, m_star, i_max = limit_ / 2;
+		int m, m_star;
+		// int index = 0;
 		double alpha;
 		double[][] archive = new double[lambda][DIM + 1];
 
@@ -1221,10 +1242,14 @@ public class player19 implements ContestSubmission {
 		int i = 0;
 		while (i < i_max) {
 
-			alpha = i / i_max;
+			alpha = (double) i / i_max;
 
-			if (rnd_.nextDouble() < gamma) {
-				score_neo = -100000;
+			if (rnd_.nextDouble() < gamma && alpha > alpha_LS_min) {
+				double[] temp = ls(denormalize(x),0.1,lsTrail);
+				i=i+lsTrail;
+				x = Arrays.copyOfRange(temp, 0, DIM);
+				score_neo = temp[DIM];
+				gamma = 0;
 			} else {
 				score_neo = (Double) evaluation_.evaluate(denormalize(x));
 				limit_--;
@@ -1241,7 +1266,8 @@ public class player19 implements ContestSubmission {
 					}
 				});
 				for (int j = 0; j < DIM; j++) {
-					double x_sum = 0, x_var = 0;
+					x_sum = 0;
+					x_var = 0;
 					for (int k = 0; k < lambda; k++) {
 						x_sum += archive[k][j];
 					}
@@ -1250,29 +1276,41 @@ public class player19 implements ContestSubmission {
 					for (int k = 0; k < lambda; k++) {
 						x_var += Math.pow(archive[k][j] - param[0][j], 2);
 					}
-					param[1][j] = -Math.log((x_var + 0.0000001) / lambda) * f_s;// different
-																				// form
-																				// orig
-					if (Double.isInfinite(param[1][j])) {
-						param[1][j] = 20;
+
+					if (param[1][j] > 20) {
+						param[1][j] += 1;
 					}
 
-					param[3][j] = param[1][j];// si1
-					param[4][j] = param[1][j];// si2
-					if (param[1][j] > 0) {
-						double delta_d = (1 + d_0) + 2 * d_0
-								* (rnd_.nextDouble() - 0.5);
-						if (param[1][j] > param[2][j]) {
-							param[2][j] = param[2][j] * delta_d;
-						} else {
-							param[2][j] = param[2][j] / delta_d;
+					if (x_var == 0) {
+						param[3][j] = param[1][j];// si1
+						param[4][j] = param[1][j];// si2
+						if (param[1][j] < s_d) {
+							s_d = s_d * k_d;
+							param[3][j] = s_d;
+						} else if (param[1][j] > s_d) {
+							s_d = s_d / k_d;
+							param[3][j] = s_d;
 						}
-						if (rnd_.nextDouble() > 0.5) {
-							param[3][j] = param[1][j];
-							param[4][j] = param[2][j];
-						} else {
-							param[3][j] = param[2][j];
-							param[4][j] = param[1][j];
+
+					} else {
+						param[1][j] = -Math.log((x_var) / lambda) * f_s;
+						param[3][j] = param[1][j];// si1
+						param[4][j] = param[1][j];// si2
+						if (param[1][j] > 0) {
+							double delta_d = (1 + d_0) + 2 * d_0
+									* (rnd_.nextDouble() - 0.5);
+							if (param[1][j] > param[2][j]) {
+								param[2][j] = param[2][j] * delta_d;
+							} else {
+								param[2][j] = param[2][j] / delta_d;
+							}
+							if (rnd_.nextDouble() > 0.5) {
+								param[3][j] = param[1][j];
+								param[4][j] = param[2][j];
+							} else {
+								param[3][j] = param[2][j];
+								param[4][j] = param[1][j];
+							}
 						}
 					}
 
@@ -1287,9 +1325,10 @@ public class player19 implements ContestSubmission {
 					* (m_star - m_final));
 
 			int[] index = getRandomPermutation(DIM);
-
+			// index += m;
 			for (int j = 0; j < m; j++) {
 				int k = index[j];
+				// int k = (j + index)%10;
 				x_star = rnd_.nextDouble();
 				h_x = MVMO_h(param[0][k], param[3][k], param[4][k], x_star);
 				h0 = MVMO_h(param[0][k], param[3][k], param[4][k], 0);
@@ -1298,6 +1337,7 @@ public class player19 implements ContestSubmission {
 			}
 			for (int j = m; j < DIM; j++) {
 				int k = index[j];
+				// int k = (j + index)%10;
 				x[k] = archive[0][k];
 			}
 
@@ -1536,7 +1576,138 @@ public class player19 implements ContestSubmission {
 		}
 		return g;
 	}
+	
+	private void SAA() {
+		double[] saa_test = new double[10];
+		for (int i = 0; i < 10; i++) {
+			saa_test[i] = rnd_.nextDouble() * 10 - 5;
+			// System.out.println(saa_test[i]);
+		}
+		sa(saa_test);
+		//ls(saa_test,0.1,150);
+		saa_test[0] = 0;
+	}
+	
+	private double[] ls(double[] x, double r, int gen){
+		double best = (double) evaluation_.evaluate(x);
+		limit_--;
+		double decay_scale = 0.999;
+		double[] g = new double[DIM+1];
+		double[] y = new double[DIM]; 
+		double tol = 1e-8;
+		double nextbest = -10000;
+		double score;
+		
+		for (int i = 0; i < gen; i++) {
+			
+			for(int j = 0;j<DIM;j++){
+				y[j] = x[j] + (rnd_.nextDouble()-0.5)*r*10;
+			}
+			score = (double) evaluation_.evaluate(y);
+			limit_--;
+			if(score>best){
+				nextbest = best;
+				best = score;
+				x = y.clone();
+				//r = r * decay_scale;
+			}
+			
+			if(Math.abs(best - nextbest)<tol){
+				break;
+			}
+		}
+		g = Arrays.copyOf(x,DIM+1);
+		g[DIM] = best;
+		return g;
+	}
+	
 
+	public void sa(double[] x) {
+		int markovlength = 180;
+		double decay_scale = 0.95;
+		double step_factor = 0.2;
+		double temperature = 500;
+		double tolerance = 1e-8;
+		double[] pre, next, prebest, best;
+		double acceptpoints = 0.0;
+		int i;
+		double pre_s = -999, next_s = -999, best_s = -999, prebest_s = -999;
+		
+		pre = new double[10];
+		next = new double[10];
+		prebest = new double[10];
+		best = new double[10];
+
+		for (i = 0; i < 10; i++) {
+			pre[i] = -x[i];
+			prebest[i] = pre[i];
+			best[i] = pre[i];
+			// System.out.println(max[i]);
+		}
+
+		do {
+			temperature = temperature * decay_scale;
+			acceptpoints = 0.0;
+
+			for (int trials = 0; trials < markovlength; trials++) {
+				// System.out.println("trials is: " + trials);
+				do {
+					for (i = 0; i < 10; i++) {
+						next[i] = pre[i] + step_factor * 5
+								* (rnd_.nextDouble() - 0.5);
+						// System.out.println("next" + i +" is " + next[i]);
+					}
+
+				} while (!within_boundary(next));
+
+				next_s = (double) evaluation_.evaluate(next);
+				// best_s = (double)evaluation_.evaluate(best);
+				// pre_s = (double)evaluation_.evaluate(pre);
+
+				if (next_s > best_s) {
+					for (i = 0; i < 10; i++) {
+
+						prebest[i] = best[i];
+						best[i] = next[i];
+					}
+					prebest_s = best_s;
+					best_s = next_s;
+				}
+
+				if (pre_s - next_s < 0) {
+					for (i = 0; i < 10; i++) {
+						pre[i] = next[i];
+					}
+					pre_s = next_s;
+					acceptpoints++;
+				} else {
+					double change = (next_s - pre_s);
+					// System.out.println(change + " " +
+					// (double)evaluation_.evaluate(next) + " " +
+					// (double)evaluation_.evaluate(pre));
+					if (Math.exp(change) / temperature > rnd_.nextDouble()) {
+						for (i = 0; i < 10; i++) {
+							pre[i] = next[i];
+						}
+						pre_s = next_s;
+						acceptpoints++;
+					}
+				}
+			}
+
+		} while (Math.abs(best_s) - Math.abs(pre_s) > tolerance);
+
+	}
+
+	private boolean within_boundary(double[] x) {
+		for (int i = 0; i < 10; i++) {
+			if (x[i] <= -5 || x[i] >= 5) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static void main(String[] args) {
 	}
 }
