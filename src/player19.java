@@ -461,7 +461,7 @@ public class player19 implements ContestSubmission {
 		SimpleMatrix C = SimpleMatrix.identity(DIM);
 		SimpleMatrix m = new SimpleMatrix(DIM, 1);
 		double chiN = Math.sqrt(DIM)
-				* (1 - 1 / (4 + DIM) + 1 / (21 * DIM * DIM));
+				* (1 - 1.0 / (4 * DIM) + 1.0 / (21 * DIM * DIM));
 
 		double[] best_score = new double[2 * generation];
 
@@ -491,6 +491,9 @@ public class player19 implements ContestSubmission {
 					}
 					y[k] = B.mult(D).mult(z[k]);
 					x[k] = m.plus(sigma, y[k]);
+					for (int i = 0; i < DIM; i++) {
+						x[k].set(i, 0, Math.max(Math.min(x[k].get(i, 0), 5), -5));
+					}
 				}
 			}
 
@@ -522,11 +525,11 @@ public class player19 implements ContestSubmission {
 							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
 			sigma = sigma
 					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
-
+			//System.out.println(sigma);
 			// Covariance matrix adaptation
 			int h_sigma;
 			if (p_sigma.normF()
-					/ Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2 / (DIM + 1))
+					/ Math.sqrt(1 - Math.pow(1 - c_sigma, 2 * (g + 1))) < (1.4 + 2.0 / (DIM + 1))
 					* chiN)
 				h_sigma = 1;
 			else
@@ -537,7 +540,7 @@ public class player19 implements ContestSubmission {
 					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
 			for (int i = 0; i < mu; i++) {
-				y_sqrsum = y[i].mult(y[i].transpose()).scale(w[i]);
+				y_sqrsum = y_sqrsum.plus(y[i].mult(y[i].transpose()).scale(w[i]));
 			}
 			// y_sqrsum.print();
 			
