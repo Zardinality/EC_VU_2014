@@ -521,8 +521,8 @@ public class player19 implements ContestSubmission {
 				//System.out.print(w[i] + " ");
 				y[i] = x[i].minus(m_bak).divide(sigma);
 			}
-			m.print();
-			System.out.println();
+			//m.print();
+			//System.out.println();
 			
 			y_w = m.minus(m_bak).divide(sigma);
 			//m.print();
