@@ -564,6 +564,9 @@ public class player19 implements ContestSubmission {
 					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 					break;
 			}
+			if (C.normF() * C.invert().normF() > 1e14) {
+				break;
+			}
 			if (g + 1 >= generation){
 				break;
 			}
