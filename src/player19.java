@@ -474,7 +474,7 @@ public class player19 implements ContestSubmission {
 			SimpleMatrix B = new SimpleMatrix(DIM, DIM);
 			SimpleMatrix D = new SimpleMatrix(DIM, DIM);
 			evd_matrix(C, B, D);
-			C.print();
+			// C.print();
 
 			if (g == 0) {
 				double[][] tmp = neo_sampling(lambda);
@@ -510,7 +510,7 @@ public class player19 implements ContestSubmission {
 
 			best_score[g] = best_;
 			m.set(0);
-			m_bak.print();
+			//m_bak.print();
 			for (int i = 0; i < mu; i++) {
 				// x[i].print();
 				m = m.plus(w[i], x[i]);
@@ -534,14 +534,14 @@ public class player19 implements ContestSubmission {
 			//System.out.println("sigma:\t" + sigma);
 			SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
 			
-			System.out.println("p_sigma:\t" + p_sigma.normF());
+			//System.out.println("p_sigma:\t" + p_sigma.normF());
 			p_sigma = p_sigma.scale(1 - c_sigma).plus(
 					C_nsqrt.mult(y_w).scale(
 							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
-			System.out.println("c_sigma:\t" + c_sigma);
-			System.out.println("d_sigma:\t" + d_sigma);
-			System.out.println("p_sigma:\t" + p_sigma.normF());
-			System.out.println("sigma:\t" + sigma + "\n");
+//			System.out.println("c_sigma:\t" + c_sigma);
+//			System.out.println("d_sigma:\t" + d_sigma);
+//			System.out.println("p_sigma:\t" + p_sigma.normF());
+//			System.out.println("sigma:\t" + sigma + "\n");
 			sigma = sigma
 					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
 			// Covariance matrix adaptation
@@ -558,13 +558,13 @@ public class player19 implements ContestSubmission {
 					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
 			for (int i = 0; i < mu; i++) {
-				y_sqrsum = y_sqrsum.plus(y[i].mult(y[i].transpose()).scale(w[i]));
+				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
 			}
 			// y_sqrsum.print();
 			
 			C = C.scale(1 - c_1 - c_mu)
-					.plus(p_c.mult(p_c.transpose())
-							.plus(C.scale(delta_h_sigma)).scale(c_1))
+					.plus(c_1, p_c.mult(p_c.transpose())
+							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
 			
 			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff
@@ -572,7 +572,7 @@ public class player19 implements ContestSubmission {
 					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 					break;
 			}
-			if (C.normF() * C.invert().normF() > 1e14) {
+			if (C.normF() * C.invert().normF() > 1e10) {
 				break;
 			}
 			if (g + 1 >= generation){
