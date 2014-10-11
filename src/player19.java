@@ -403,7 +403,7 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES_RS() {
 		int lambda_default = 35;
 		int lambda = lambda_default;
-		double sigma_default = 1.4;
+		double sigma_default = 3;
 		double sigma = sigma_default;
 		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
@@ -545,7 +545,6 @@ public class player19 implements ContestSubmission {
 				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
 			}
 			
-			c_mu = 0;
 			C = C.scale(1 - c_1 - c_mu)
 					.plus(c_1, p_c.mult(p_c.transpose())
 							.plus(C.scale(delta_h_sigma)))
