@@ -401,7 +401,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda_default = 45;
+		int lambda_default = 35;
 		int lambda = lambda_default;
 		double sigma_default = 1.4;
 		double sigma = sigma_default;
