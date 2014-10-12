@@ -403,7 +403,7 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES_RS() {
 		int lambda_default = 35;
 		int lambda = lambda_default;
-		double sigma_default = 3;
+		double sigma_default = 1.6;
 		double sigma = sigma_default;
 		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
@@ -550,7 +550,7 @@ public class player19 implements ContestSubmission {
 							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
 		
-			if (g >= 20 && best_score[g] - best_score[g - 20] < endDiff) {
+			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff) {
 					break;
 			}
 			if (g + 1 >= generation) {
@@ -590,7 +590,7 @@ public class player19 implements ContestSubmission {
 			}
 		}
 
-		best_ = 0;
+		//best_ = 0;
 		SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
 		for (int i = 0; i < lambda; i++) {
 			double[] gene = x[i].getMatrix().getData();
