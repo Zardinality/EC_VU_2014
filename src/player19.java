@@ -530,7 +530,7 @@ public class player19 implements ContestSubmission {
 							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
 			sigma = sigma
 					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
-			//System.out.println(sigma);
+			System.out.println(p_sigma.normF() + " " + sigma);
 			
 			// Covariance matrix adaptation
 			int h_sigma;
@@ -554,10 +554,10 @@ public class player19 implements ContestSubmission {
 					.plus(c_1, p_c.mult(p_c.transpose())
 							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
-			/*
+			
 			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff) {
 					break;
-			}*/
+			}
 			if (g + 1 >= generation) {
 				break;
 			}
