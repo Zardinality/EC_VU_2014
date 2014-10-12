@@ -540,7 +540,7 @@ public class player19 implements ContestSubmission {
 					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
 			for (int i = 0; i < mu; i++) {
-				y_sqrsum = y_sqrsum.plus(y[i].mult(y[i].transpose()).scale(w[i]));
+				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
 			}
 			// y_sqrsum.print();
 			
