@@ -403,12 +403,14 @@ public class player19 implements ContestSubmission {
 	private void CMA_ES_RS() {
 		int lambda_default = 35;
 		int lambda = lambda_default;
-		double sigma_default = 1.4;
+		double sigma_default = 1.6;
 		double sigma = sigma_default;
 		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda, sigma);
-			//lambda = (int) Math.round(lambda * 1.1);
+//			lambda = (int) Math.round(lambda * 2);
+			//sigma = sigma / 1.1;
+//			System.out.println(lambda);
 		}
 	}
 
@@ -460,8 +462,7 @@ public class player19 implements ContestSubmission {
 		// double[][] g = sampling(population_);
 		SimpleMatrix C = SimpleMatrix.identity(DIM);
 		SimpleMatrix m = new SimpleMatrix(DIM, 1);
-		double chiN = Math.sqrt(DIM)
-				* (1 - 1.0 / (4 * DIM) + 1.0 / (21 * DIM * DIM));
+		double chiN = Math.sqrt(DIM) * (1 - 1.0 / (4 * DIM) + 1.0 / (21 * DIM * DIM));
 
 		double[] best_score = new double[2 * generation];
 
@@ -474,6 +475,7 @@ public class player19 implements ContestSubmission {
 			SimpleMatrix B = new SimpleMatrix(DIM, DIM);
 			SimpleMatrix D = new SimpleMatrix(DIM, DIM);
 			evd_matrix(C, B, D);
+			//C.print();
 
 			if (g == 0) {
 				double[][] tmp = neo_sampling(lambda);
@@ -491,6 +493,7 @@ public class player19 implements ContestSubmission {
 					}
 					y[k] = B.mult(D).mult(z[k]);
 					x[k] = m.plus(sigma, y[k]);
+					//x[k].print();
 					for (int i = 0; i < DIM; i++) {
 						x[k].set(i, 0, Math.max(Math.min(x[k].get(i, 0), 5), -5));
 					}
@@ -509,23 +512,24 @@ public class player19 implements ContestSubmission {
 
 			best_score[g] = best_;
 			m.set(0);
-
 			for (int i = 0; i < mu; i++) {
-				// x[i].print();
 				m = m.plus(w[i], x[i]);
 				y[i] = x[i].minus(m_bak).divide(sigma);
 			}
+			//m.print();
 			
 			y_w = m.minus(m_bak).divide(sigma);
 			
 			// Step-size control
 			SimpleMatrix C_nsqrt = B.mult(D.invert()).mult(B.transpose());
+			
 			p_sigma = p_sigma.scale(1 - c_sigma).plus(
 					C_nsqrt.mult(y_w).scale(
 							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
 			sigma = sigma
 					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
-			//System.out.println(sigma);
+			System.out.println(sigma);
+
 			// Covariance matrix adaptation
 			int h_sigma;
 			if (p_sigma.normF()
@@ -542,22 +546,19 @@ public class player19 implements ContestSubmission {
 			for (int i = 0; i < mu; i++) {
 				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
 			}
-			// y_sqrsum.print();
 			
 			C = C.scale(1 - c_1 - c_mu)
-					.plus(p_c.mult(p_c.transpose())
-							.plus(C.scale(delta_h_sigma)).scale(c_1))
+					.plus(c_1, p_c.mult(p_c.transpose())
+							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
-			
-			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff
-					&& limit_ * 2 >= (int) lambda
-					* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+		
+			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff) {
 					break;
 			}
-			if (g + 1 >= generation){
+			if (g + 1 >= generation) {
 				break;
 			}
-			if(limit_ < lambda){
+			if(limit_ < lambda) {
 				break;
 			}
 		}
@@ -591,7 +592,7 @@ public class player19 implements ContestSubmission {
 			}
 		}
 
-		best_ = 0;
+		//best_ = 0;
 		SimpleMatrix[] x_fit = new SimpleMatrix[lambda];
 		for (int i = 0; i < lambda; i++) {
 			double[] gene = x[i].getMatrix().getData();
