@@ -494,7 +494,11 @@ public class player19 implements ContestSubmission {
 					y[k] = B.mult(D).mult(z[k]);
 					x[k] = m.plus(sigma, y[k]);
 					for (int i = 0; i < DIM; i++) {
-						x[k].set(i, 0, Math.max(Math.min(x[k].get(i, 0), 5), -5));
+						double tmp = x[k].get(i, 0);
+						if (tmp < -5 || tmp > 5) {
+							k--;
+							break;
+						}
 					}
 				}
 			}
@@ -526,6 +530,7 @@ public class player19 implements ContestSubmission {
 							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
 			sigma = sigma
 					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
+			//System.out.println(sigma);
 			
 			// Covariance matrix adaptation
 			int h_sigma;
