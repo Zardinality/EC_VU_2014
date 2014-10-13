@@ -401,9 +401,9 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda_default = 35;
+		int lambda_default = 10;
 		int lambda = lambda_default;
-		double sigma_default = 1.4;
+		double sigma_default = 3;
 		double sigma = sigma_default;
 		while (limit_ * 2 > (int) lambda
 				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
@@ -488,18 +488,20 @@ public class player19 implements ContestSubmission {
 			*/
 			evd_matrix(C, B, D);
 			//C.print();
-
+			
 			if (g == 0) {
 				double[][] tmp = neo_sampling(lambda);
 				for (int k = 0; k < lambda; k++) {
 					x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
+					y[k] = new SimpleMatrix(DIM, 1);
+					z[k] = new SimpleMatrix(DIM, 1);
 				}
 			} else {
 				
 				for (int k = 0; k < lambda; k++) {
-					x[k] = new SimpleMatrix(DIM, 1);
-					y[k] = new SimpleMatrix(DIM, 1);
-					z[k] = new SimpleMatrix(DIM, 1);
+					//x[k] = new SimpleMatrix(DIM, 1);
+					//y[k] = new SimpleMatrix(DIM, 1);
+					//z[k] = new SimpleMatrix(DIM, 1);
 					for (int i = 0; i < DIM; i++) {
 						z[k].set(i, 0, rnd_.nextGaussian());
 					}
@@ -514,7 +516,8 @@ public class player19 implements ContestSubmission {
 					}
 				}
 			}
-
+			//C.print();
+			
 			// Selection and recombination
 			SimpleMatrix y_w;
 			SimpleMatrix m_bak = m.copy();
@@ -557,6 +560,7 @@ public class player19 implements ContestSubmission {
 			p_c = p_c.scale(1 - c_c).plus(
 					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
+			
 			for (int i = 0; i < mu; i++) {
 				//y_sqrsum.set(0);
 				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
@@ -566,9 +570,12 @@ public class player19 implements ContestSubmission {
 					.plus(c_1, p_c.mult(p_c.transpose())
 							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
+			//y_sqrsum.print();
+			//C.minus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)));
+			//C.minus(y_sqrsum).print();
 			
-			if (g >= 30 && best_score[g] - best_score[g - 20] < endDiff) {
-					//break;
+			if (g >= 50 && best_score[g] - best_score[g - 20] < endDiff) {
+					break;
 			}
 			if (g + 1 >= generation) {
 				break;
@@ -576,7 +583,7 @@ public class player19 implements ContestSubmission {
 			if(limit_ < lambda) {
 				break;
 			}
-			System.out.println(g+"    "+sigma);
+			//System.out.println(g+"    "+sigma);
 		}
 	}
 
