@@ -40,7 +40,7 @@ public class Main {
 		sum = 0;
 		score = 0;
 		for (i = 0; i < trailnum; i++) {
-			SchwefelEvaluation eva = new SchwefelEvaluation();
+			RastriginEvaluation eva = new RastriginEvaluation();
 			player19 test = new player19();
 			test.setSeed(i);
 			test.setEvaluation(eva);
