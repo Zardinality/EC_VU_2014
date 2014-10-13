@@ -162,6 +162,10 @@ public class RastriginEvaluation implements ContestEvaluation
 	{
 	    int i;
 		double alpha=10.0,beta=0.2;
+		for (i=0; i<nx; i++)//shrink to the orginal search range
+	    {
+	        x[i]=x[i]*20;
+	    }
 		shiftfunc(x, y, nx, Os);
 		for (i=0; i<nx; i++)//shrink to the orginal search range
 	    {
@@ -220,8 +224,10 @@ public class RastriginEvaluation implements ContestEvaluation
 		
 		// Transform function value (sphere is minimization).
 		// Normalize using the base performance
+		
+		
 		double f = 0;
-		f = Math.exp(-rastrigin_func(ind, f, 10, OShift, M, 1) / 10) * 10;
+		f = Math.exp(-rastrigin_func(ind, f, 10, OShift, M, 1)/10) * 10;
 		//System.out.println(f);
 		if(f>best_) best_ = f;
 		evaluations_++;
