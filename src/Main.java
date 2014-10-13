@@ -1,6 +1,8 @@
+import java.io.FileNotFoundException;
+
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 
 		int trailnum = 20;
 		int i, j;
@@ -38,7 +40,7 @@ public class Main {
 		sum = 0;
 		score = 0;
 		for (i = 0; i < trailnum; i++) {
-			FletcherEvaluation eva = new FletcherEvaluation();
+			SchwefelEvaluation eva = new SchwefelEvaluation();
 			player19 test = new player19();
 			test.setSeed(i);
 			test.setEvaluation(eva);
