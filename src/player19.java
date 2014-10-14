@@ -585,7 +585,7 @@ public class player19 implements ContestSubmission {
 
 
 			
-			if (g >= 100) {
+			if (g >= 60) {
 				if(best_ < 9.2){
 				break;
 				}else{
@@ -754,8 +754,8 @@ public class player19 implements ContestSubmission {
 					CRsuc = 0;
 				}
 				for (int j = 0; j < population; j++) {
-					//CR[j] = CRm + rnd_.nextGaussian() * CRd;
-					CR[j] = CRm + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
+					CR[j] = CRm + rnd_.nextGaussian() * CRd;
+					//CR[j] = CRm + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
 					CR[j] = Math.max(0.1, CR[j]);
 				}
 			}
