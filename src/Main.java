@@ -41,6 +41,7 @@ public class Main {
 		score = 0;
 		for (i = 0; i < trailnum; i++) {
 			RastriginEvaluation eva = new RastriginEvaluation();
+			//SchwefelEvaluation eva = new SchwefelEvaluation();
 			player19 test = new player19();
 			test.setSeed(i);
 			test.setEvaluation(eva);

@@ -15,7 +15,7 @@ import org.vu.contest.ContestEvaluation;
 public class RastriginEvaluation implements ContestEvaluation 
 {
 	// Evaluations budget
-	private final static int EVALS_LIMIT_ = 500000;
+	private final static int EVALS_LIMIT_ = 1000000;
 	// The base performance. It is derived by doing random search on the sphere function (see function method) with the same
 	//  amount of evaluations
 	

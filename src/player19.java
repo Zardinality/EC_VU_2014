@@ -401,12 +401,11 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda_default = 10;
+		int lambda_default = 50;
 		int lambda = lambda_default;
-		double sigma_default = 3;
+		double sigma_default = 1.4;
 		double sigma = sigma_default;
-		while (limit_ * 2 > (int) lambda
-				* (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
+		while (limit_ > lambda){//(int) lambda * (100 + 50 * Math.pow((DIM + 3), 2) / Math.sqrt(lambda))) {
 			CMA_ES(lambda, sigma);
 			//lambda = (int) Math.round(lambda * 1.1);
 			//sigma = sigma / 1.1;
@@ -419,7 +418,6 @@ public class player19 implements ContestSubmission {
 		// - Selection and Recombination
 		int generation = (int) (100 + 50 * Math.pow((DIM + 3), 2)
 				/ Math.sqrt(lambda));
-		generation = generation;
 		int mu = lambda / 2; //
 		double mu_p = (double) lambda / 2; // mu'
 		double[] w = new double[mu]; // w
@@ -452,9 +450,6 @@ public class player19 implements ContestSubmission {
 		double c_mu = Math.min(1 - c_1, alpha_mu * (mu_eff - 2 + 1 / mu_eff)
 				/ (Math.pow(DIM + 2, 2) + alpha_mu * mu_eff / 2));
 
-		// double E_norm = Math.sqrt(DIM)
-		// * (1 - 0.25 / DIM + 1 / (21 * Math.pow(DIM, 2)));
-
 		// Initialization
 		SimpleMatrix p_sigma = new SimpleMatrix(DIM, 1);
 		// double p_norm = 0;
@@ -476,6 +471,10 @@ public class player19 implements ContestSubmission {
 		SimpleMatrix B = new SimpleMatrix(DIM, DIM);
 		SimpleMatrix D = new SimpleMatrix(DIM, DIM);
 		
+		int counteval = 0;
+		int eigeneval = 0;
+		evd_matrix(C, B, D);
+		
 		for (int g = 0;; g++) {
 			// Sample new population of search points
 			/*
@@ -486,15 +485,14 @@ public class player19 implements ContestSubmission {
 			SimpleMatrix B = new SimpleMatrix(DIM, DIM);
 			SimpleMatrix D = new SimpleMatrix(DIM, DIM);
 			*/
-			evd_matrix(C, B, D);
-			//C.print();
-			
+
 			if (g == 0) {
 				double[][] tmp = neo_sampling(lambda);
 				for (int k = 0; k < lambda; k++) {
 					x[k] = new SimpleMatrix(DIM, 1, true, tmp[k]);
 					y[k] = new SimpleMatrix(DIM, 1);
 					z[k] = new SimpleMatrix(DIM, 1);
+					counteval++;
 				}
 			} else {
 				
@@ -507,13 +505,15 @@ public class player19 implements ContestSubmission {
 					}
 					y[k] = B.mult(D).mult(z[k]);
 					x[k] = m.plus(sigma, y[k]);
+					/*
 					for (int i = 0; i < DIM; i++) {
 						double tmp = x[k].get(i, 0);
 						if (tmp < -5 || tmp > 5) {
 							k--;
 							break;
 						}
-					}
+					}*/
+					counteval++;
 				}
 			}
 			//C.print();
@@ -524,7 +524,7 @@ public class player19 implements ContestSubmission {
 			if (g == 0) {
 				best_ = 0;
 			} else {
-				best_ = best_score[g - 1];
+				//best_ = best_score[g - 1];
 			}
 			CMA_sort(x, lambda);
 
@@ -543,8 +543,10 @@ public class player19 implements ContestSubmission {
 			p_sigma = p_sigma.scale(1 - c_sigma).plus(
 					C_nsqrt.mult(y_w).scale(
 							Math.sqrt(c_sigma * (2 - c_sigma) * mu_eff)));
+			
 			sigma = sigma
 					* Math.exp(c_sigma / d_sigma * (p_sigma.normF() / chiN - 1));
+			sigma = Math.min(sigma, 10);
 			//System.out.println(p_sigma.normF() + " " + sigma);
 			
 			// Covariance matrix adaptation
@@ -562,7 +564,7 @@ public class player19 implements ContestSubmission {
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
 			
 			for (int i = 0; i < mu; i++) {
-				//y_sqrsum.set(0);
+				y_sqrsum.set(0);
 				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
 			}
 			//c_mu = 0;
@@ -570,20 +572,34 @@ public class player19 implements ContestSubmission {
 					.plus(c_1, p_c.mult(p_c.transpose())
 							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
-			//y_sqrsum.print();
-			//C.minus(p_c.mult(p_c.transpose()).plus(C.scale(delta_h_sigma)));
-			//C.minus(y_sqrsum).print();
 			
-			if (g >= 50 && best_score[g] - best_score[g - 20] < endDiff) {
-					break;
+			if (counteval - eigeneval > lambda / (c_1 + c_mu) / DIM / 10) {
+				eigeneval = counteval;
+				C = C.plus(C.transpose()).scale(0.5);
+				evd_matrix(C, B, D);
 			}
+
+			if (g >= 50 && best_score[g] - best_score[g - 30] < endDiff) {
+				//break;
+			}
+
+
+			
+			if (g >= 40) {
+				if(best_ < 9.1){
+				break;
+				}else{
+					//System.out.println(g+"  "+best_);
+				}
+			}
+
 			if (g + 1 >= generation) {
 				break;
 			}
 			if(limit_ < lambda) {
 				break;
 			}
-			//System.out.println(g+"    "+sigma);
+
 		}
 	}
 
@@ -738,7 +754,8 @@ public class player19 implements ContestSubmission {
 					CRsuc = 0;
 				}
 				for (int j = 0; j < population; j++) {
-					CR[j] = CRm + rnd_.nextGaussian() * CRd;
+					//CR[j] = CRm + rnd_.nextGaussian() * CRd;
+					CR[j] = CRm + Math.tan(Math.PI * (rnd_.nextDouble() - 0.5)) * CRd;
 					CR[j] = Math.max(0.1, CR[j]);
 				}
 			}
