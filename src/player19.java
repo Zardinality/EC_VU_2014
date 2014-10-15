@@ -401,7 +401,7 @@ public class player19 implements ContestSubmission {
 	}
 
 	private void CMA_ES_RS() {
-		int lambda_default = 25;
+		int lambda_default = 35;
 		int lambda = lambda_default;
 		double sigma_default = 1.4;
 		double sigma = sigma_default;
@@ -562,9 +562,8 @@ public class player19 implements ContestSubmission {
 			p_c = p_c.scale(1 - c_c).plus(
 					y_w.scale(h_sigma * Math.sqrt(c_c * (2 - c_c) * mu_eff)));
 			SimpleMatrix y_sqrsum = new SimpleMatrix(DIM, DIM);
-			
+			y_sqrsum.set(0);
 			for (int i = 0; i < mu; i++) {
-				
 				y_sqrsum = y_sqrsum.plus(w[i], y[i].mult(y[i].transpose()));
 			}
 			y_sqrsum.set(0);
@@ -573,6 +572,9 @@ public class player19 implements ContestSubmission {
 					.plus(c_1, p_c.mult(p_c.transpose())
 							.plus(C.scale(delta_h_sigma)))
 					.plus(c_mu, y_sqrsum);
+			
+			//System.out.println(sigma);
+			//C.print();
 			
 			if (counteval - eigeneval > lambda / (c_1 + c_mu) / DIM / 10) {
 				eigeneval = counteval;
@@ -586,7 +588,7 @@ public class player19 implements ContestSubmission {
 
 
 			
-			if (g >= 80) {
+			if (g >= 60) {
 				if(best_ < 9.2){
 				break;
 				}else{
