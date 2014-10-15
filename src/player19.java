@@ -576,6 +576,8 @@ public class player19 implements ContestSubmission {
 			//System.out.println(sigma);
 			//C.print();
 			
+			//y_sqrsum.print();
+			
 			if (counteval - eigeneval > lambda / (c_1 + c_mu) / DIM / 10) {
 				eigeneval = counteval;
 				C = C.plus(C.transpose()).scale(0.5);
