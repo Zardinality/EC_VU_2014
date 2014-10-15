@@ -590,7 +590,7 @@ public class player19 implements ContestSubmission {
 
 
 			
-			if (g >= 60) {
+			if (g >= 90) {
 				if(best_ < 9.2){
 				break;
 				}else{
